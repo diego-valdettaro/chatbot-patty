@@ -307,3 +307,35 @@ La sub-tarea 1.7 convierte la logica de catalogo en algo visible y probale desde
 ### Proximo paso
 
 Ejecutar validaciones y luego esperar aprobacion explicita para `1.9 Validar Etapa 1 y registrar cierre`.
+
+## 2026-07-22 - Sesion 9
+
+### Objetivo
+
+Ejecutar la sub-tarea `1.9 Validar Etapa 1 y registrar cierre`, aprobada por el usuario.
+
+### Cambios realizados
+
+- Se valido tecnicamente la Etapa 1.
+- Se verifico que Streamlit responde localmente.
+- Se cerro la Etapa 1 en `docs/planning/current-stage.md`.
+- Se activo la Etapa 2 como siguiente etapa de trabajo.
+- Se propuso la lista inicial de sub-tareas para Etapa 2.
+
+### Decisiones
+
+- La Etapa 1 queda cerrada porque cumple los criterios de catalogo local, busqueda deterministica, filtros de activos, precios desde catalogo y sugerencias limitadas.
+- La Etapa 2 se enfocara solo en carrito y calculo de totales.
+- La captura de datos obligatorios, modalidad y fecha queda fuera hasta Etapa 3.
+- La persistencia SQLite queda fuera hasta Etapa 4.
+- El LLM queda fuera hasta etapas posteriores.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `32 passed`.
+- OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
+- OK: el repo ya tenia commit inicial y push a `origin/master` antes de este cierre documental.
+
+### Proximo paso
+
+Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 2. Si se aprueban, explicar y pedir aprobacion especifica para ejecutar `2.1 Definir modelo minimo de carrito`.

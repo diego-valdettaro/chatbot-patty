@@ -1,8 +1,8 @@
-# Etapa actual - Etapa 1: Catalogo local y busqueda deterministica
+# Etapa actual - Etapa 2: Carrito y calculo de totales
 
 ## Objetivo
 
-Tener un catalogo consultable sin LLM, respetando las reglas de productos activos, precios validos y sugerencias limitadas.
+Permitir armar y modificar un carrito con calculos deterministas, usando siempre productos y precios del catalogo.
 
 ## Principio de trabajo
 
@@ -20,67 +20,22 @@ Antes de pedir aprobacion para una sub-tarea, siempre se debe explicar:
 
 ## Estado
 
-- Etapa activa: `Etapa 1 - Catalogo local y busqueda deterministica`
-- Estado general: `En progreso`
-- Sub-tarea actual: `1.8 Agregar tests de catalogo`
+- Etapa anterior: `Etapa 1 - Catalogo local y busqueda deterministica`
+- Estado Etapa 1: `Cerrada`
+- Etapa activa: `Etapa 2 - Carrito y calculo de totales`
+- Estado general: `Pendiente de aprobacion de sub-tareas`
+- Sub-tarea actual: `Definir y aprobar sub-tareas de Etapa 2`
 
-## Sub-tareas
+## Cierre de Etapa 1
 
-- [x] 1.1 Revisar alcance de catalogo y definir schema minimo
-- [x] 1.2 Crear catalogo sample
-- [x] 1.3 Implementar modelos de catalogo
-- [x] 1.4 Implementar carga del catalogo
-- [x] 1.5 Implementar busqueda exacta y por alias
-- [x] 1.6 Implementar busqueda aproximada y por categoria
-- [x] 1.7 Conectar busqueda minima a Streamlit
-- [x] 1.8 Agregar tests de catalogo
-- [ ] 1.9 Validar Etapa 1 y registrar cierre
+### Validaciones ejecutadas
 
-## Detalle aprobado para 1.1
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `32 passed`.
+- OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
+- OK: la app carga busqueda de catalogo desde `data/catalog.sample.csv`.
+- OK: los tests cubren carga de catalogo, modelos, busqueda exacta, alias, categoria, similitud, productos inactivos y escenarios de aceptacion.
 
-### Alcance
-
-Definir el schema minimo del catalogo MVP y las reglas de normalizacion que usaremos antes de crear `data/catalog.sample.csv`.
-
-### Schema minimo propuesto
-
-El archivo inicial sera CSV para que sea facil de revisar y editar manualmente.
-
-Columnas:
-
-- `id`: identificador interno estable del producto. Texto corto, unico, no vacio.
-- `name`: nombre comercial visible para el cliente. Texto, unico entre productos activos.
-- `aliases`: alias separados por `|`. Puede estar vacio si no hay alias.
-- `category`: categoria comercial simple para busqueda y agrupacion.
-- `price`: precio unitario en soles. Numero decimal mayor o igual que cero.
-- `active`: bandera booleana para decidir si el bot puede ofrecer el producto.
-
-Ejemplo de fila:
-
-```csv
-id,name,aliases,category,price,active
-cake-red-velvet-mediana,Red Velvet mediana,red velvet|torta red velvet,Tortas,85.00,true
-```
-
-### Reglas de normalizacion
-
-- Todas las busquedas se comparan en minusculas.
-- Se ignoran espacios extra al inicio, al final y entre palabras.
-- Se ignoran tildes para comparar busquedas, nombres, alias y categorias.
-- Los alias se separan con `|`.
-- `active` aceptara inicialmente `true` o `false`.
-- `price` se parseara como decimal desde el CSV; el LLM nunca podra enviar ni modificar precios.
-
-### Reglas de negocio de catalogo
-
-- Solo productos activos pueden aparecer como resultados ofrecibles.
-- El precio del catalogo es la unica fuente valida del precio.
-- El bot no puede inventar productos.
-- El bot no puede inventar ni modificar precios.
-- Las alternativas sugeridas deben existir en el catalogo activo.
-- Una busqueda sin coincidencia suficiente debe responder que Patty no cuenta con ese producto.
-
-## Validaciones esperadas para cerrar la etapa
+### Criterios cumplidos
 
 - Buscar un producto por nombre exacto.
 - Buscar un producto por alias.
@@ -92,31 +47,67 @@ cake-red-velvet-mediana,Red Velvet mediana,red velvet|torta red velvet,Tortas,85
 - Confirmar que nunca se inventan productos ni precios.
 - `pytest` cubre carga de catalogo y busqueda.
 
-## Decisiones de la etapa
+### Decisiones cerradas
 
-- El catalogo inicial sera `data/catalog.sample.csv`.
-- El formato inicial sera CSV, no SQLite ni JSON, porque el catalogo debe ser facil de revisar durante el MVP.
-- El schema minimo queda definido en la sub-tarea 1.1.
-- Los precios se modelan con `Decimal`, no con `float`.
-- Los modelos de catalogo usan `dataclass(frozen=True)` para mantener objetos simples e inmutables.
-- La carga del catalogo usa CSV con `utf-8` y valida columnas requeridas.
-- `active` acepta inicialmente solo `true` o `false`.
-- La busqueda exacta normaliza minusculas, tildes y espacios.
-- La busqueda exacta solo devuelve productos activos.
-- Los tipos de match exacto son `exact_name` y `exact_alias`.
+- El catalogo inicial es `data/catalog.sample.csv`.
+- El formato inicial es CSV, no SQLite ni JSON.
+- Los precios se modelan con `Decimal`.
+- Solo productos activos pueden aparecer como ofrecibles.
 - La busqueda general prioriza exacto, luego categoria, luego similitud.
 - La similitud devuelve como maximo dos alternativas activas por defecto.
-- Los tipos de match nuevos son `category` y `similarity`.
-- Streamlit carga `data/catalog.sample.csv` y expone una busqueda visible de catalogo.
-- La suite de catalogo incluye tests de aceptacion alineados al PRD.
+- Streamlit expone una busqueda visible de catalogo como herramienta de validacion.
+
+## Sub-tareas propuestas para Etapa 2
+
+- [ ] 2.1 Definir modelo minimo de carrito
+- [ ] 2.2 Implementar agregar producto por `product_id`
+- [ ] 2.3 Implementar cambio y validacion de cantidades
+- [ ] 2.4 Implementar eliminar productos del carrito
+- [ ] 2.5 Implementar calculo de subtotal, delivery y total
+- [ ] 2.6 Conectar carrito minimo a Streamlit
+- [ ] 2.7 Agregar tests de aceptacion de carrito
+- [ ] 2.8 Validar Etapa 2 y registrar cierre
+
+## Alcance propuesto para Etapa 2
+
+- Crear una representacion determinista del carrito.
+- Agregar productos usando IDs existentes del catalogo.
+- Asumir cantidad `1` cuando no se especifique.
+- Validar cantidades enteras mayores que cero.
+- Cambiar cantidades.
+- Eliminar productos.
+- Calcular subtotal por producto.
+- Calcular subtotal general.
+- Calcular delivery fijo.
+- Calcular total.
+- Mostrar resumen del carrito en Streamlit.
+
+## Fuera de alcance de Etapa 2
+
+- Captura de nombre, telefono, modalidad y fecha.
+- Validacion de fecha minima.
+- Guardado en SQLite.
+- Confirmacion real de pedido.
+- LLM o interpretacion conversacional avanzada.
+- Procesamiento de pagos.
+
+## Validaciones esperadas para cerrar Etapa 2
+
+- Agregar un producto.
+- Agregar dos productos.
+- Cambiar una cantidad.
+- Rechazar cantidad invalida.
+- Eliminar un producto.
+- Confirmar que los subtotales cambian correctamente.
+- Confirmar que el total usa precios del catalogo, no texto del usuario.
+- `pytest` cubre modelo de carrito, operaciones y calculos.
 
 ## Notas abiertas
 
-- Mas adelante, si el export real de Odoo trae columnas distintas, se agregara una capa de adaptacion hacia este schema minimo.
-- El catalogo sample contiene 30 productos, incluyendo variantes de Red Velvet, alias, categorias y un producto inactivo.
-- Streamlit quedo reiniciado en el puerto `8501` con PID `22132`.
-- Pendiente de revision visual por usuario: probar busquedas de catalogo desde el navegador.
+- El delivery fijo se definira en configuracion para poder reutilizarlo en etapas posteriores.
+- En Etapa 2 el delivery puede calcularse como valor fijo base, aunque la modalidad delivery/recojo se modele en Etapa 3.
+- La UI de carrito seguira siendo de validacion, no la experiencia conversacional final.
 
 ## Proxima accion
 
-Esperar aprobacion del usuario para ejecutar la sub-tarea `1.9 Validar Etapa 1 y registrar cierre`.
+Esperar aprobacion del usuario sobre la lista de sub-tareas de Etapa 2. Si la lista se aprueba, explicar y pedir aprobacion especifica para ejecutar `2.1 Definir modelo minimo de carrito`.
