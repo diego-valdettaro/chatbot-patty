@@ -9,3 +9,4 @@ PICKUP_STORES = ("Benavides", "San Isidro")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_SAMPLE_PATH = PROJECT_ROOT / "data" / "catalog.sample.csv"
+DATABASE_PATH = PROJECT_ROOT / "data" / "patty.sqlite3"

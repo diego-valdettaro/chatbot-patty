@@ -597,3 +597,50 @@ Ejecutar completa la Etapa 3: datos obligatorios, modalidad y fecha.
 ### Proximo paso
 
 Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 4.
+
+## 2026-07-22 - Sesion 16
+
+### Objetivo
+
+Ejecutar completa la Etapa 4: persistencia SQLite y confirmacion real.
+
+### Comentario de sub-etapas
+
+- `4.1`: se definio schema SQLite minimo con `orders` y `order_items`.
+- `4.2`: se implemento inicializacion idempotente de base de datos.
+- `4.3`: se implemento guardado transaccional de pedido e items.
+- `4.4`: se bloqueo guardado con carrito vacio o datos invalidos.
+- `4.5`: se conecto boton explicito de confirmacion en Streamlit.
+- `4.6`: se deshabilitaron modificaciones despues de confirmar.
+- `4.7`: se agregaron tests de persistencia y confirmacion.
+- `4.8`: se valido, documento y cerro la etapa.
+
+### Cambios realizados
+
+- Se agrego `DATABASE_PATH` en `src/patty_bot/config.py`.
+- Se creo `src/patty_bot/repository.py`.
+- Se agrego `initialize_database`.
+- Se agrego `save_confirmed_order`.
+- Se agrego estado inicial `Pendiente de pago y revision`.
+- Se agrego boton `Confirmar pedido` en Streamlit.
+- La confirmacion guarda el pedido en `data/patty.sqlite3`.
+- La app bloquea agregar, cambiar cantidad, quitar productos y editar datos despues de confirmar.
+- Se agregaron tests en `tests/test_repository.py`.
+- Se actualizo `docs/planning/current-stage.md` para cerrar Etapa 4 y proponer Etapa 5.
+
+### Decisiones
+
+- El ID interno del pedido no se muestra al cliente.
+- El guardado usa snapshots de producto: ID, nombre, precio unitario, cantidad y subtotal.
+- Los valores monetarios se guardan como texto decimal con dos digitos.
+- La confirmacion solo ocurre por boton de Streamlit.
+- Recuperar pedidos al recargar la app queda fuera de esta etapa.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `81 passed`.
+- OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
+
+### Proximo paso
+
+Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 5.
