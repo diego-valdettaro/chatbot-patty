@@ -524,3 +524,25 @@ El objetivo fue completar el corte vertical de carrito: eliminar productos, calc
 ### Proximo paso
 
 Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 3. Si se aprueban, explicar y pedir aprobacion especifica para ejecutar `3.1 Definir modelo minimo de datos del pedido`.
+
+## 2026-07-22 - Sesion 14
+
+### Objetivo
+
+Corregir bug visual del carrito detectado por el usuario despues del cierre de Etapa 2.
+
+### Problema
+
+Al agregar varias unidades del mismo producto, el dominio sumaba bien la cantidad, pero el control de cantidad de Streamlit podia volver a escribir `1` en el carrito. El problema ocurria porque `st.number_input` conservaba estado interno con una key fija por producto.
+
+### Cambios realizados
+
+- Se cambio la key del `number_input` de cantidad para incluir la cantidad actual del item.
+- Esto fuerza a Streamlit a resincronizar el widget cuando el carrito cambia por agregar o quitar productos.
+- Se reemplazo el separador visual de caption de catalogo por ASCII para evitar problemas de codificacion.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `61 passed`.
+- OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
+- Pendiente: validacion visual manual por usuario en navegador, porque el navegador integrado no estuvo disponible en esta sesion.

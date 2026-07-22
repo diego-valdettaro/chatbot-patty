@@ -35,7 +35,7 @@ def render_catalog_result(result: CatalogSearchResult, catalog) -> None:
         columns = st.columns([3, 1, 1])
         with columns[0]:
             st.write(f"**{product.name}**")
-            st.caption(f"{product.category} · {match.match_type} · score {match.score:.2f}")
+            st.caption(f"{product.category} - {match.match_type} - score {match.score:.2f}")
         with columns[1]:
             st.write(format_price(product.price))
         with columns[2]:
@@ -63,7 +63,7 @@ def render_cart() -> None:
                 min_value=1,
                 step=1,
                 value=item.quantity,
-                key=f"quantity-{item.product.id}",
+                key=f"quantity-{item.product.id}-{item.quantity}",
             )
             if quantity != item.quantity:
                 st.session_state.cart = change_cart_item_quantity(cart, item.product.id, int(quantity))
