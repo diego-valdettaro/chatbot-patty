@@ -339,3 +339,188 @@ Ejecutar la sub-tarea `1.9 Validar Etapa 1 y registrar cierre`, aprobada por el 
 ### Proximo paso
 
 Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 2. Si se aprueban, explicar y pedir aprobacion especifica para ejecutar `2.1 Definir modelo minimo de carrito`.
+
+## 2026-07-22 - Sesion 10
+
+### Objetivo
+
+Ejecutar la sub-tarea `2.1 Definir modelo minimo de carrito`, aprobada por el usuario.
+
+### Justificacion
+
+Esta sub-tarea crea la base del dominio de carrito antes de implementar operaciones. El carrito debe tener una estructura propia para que agregar, cambiar cantidades, eliminar productos y calcular totales se apoyen en objetos testeables y no en estado de Streamlit.
+
+### Cambios realizados
+
+- Se creo `src/patty_bot/cart.py`.
+- Se agrego `CartItem`.
+- Se agrego `Cart`.
+- `CartItem` referencia un `Product` del catalogo.
+- `CartItem` valida que la cantidad sea un entero mayor que cero.
+- `CartItem` calcula `line_subtotal` desde `product.price * quantity`.
+- `Cart` mantiene items como tupla inmutable.
+- `Cart` expone `is_empty`.
+- `Cart` expone `subtotal`.
+- Se agregaron tests en `tests/test_cart_models.py`.
+
+### Decisiones
+
+- El carrito reutiliza el modelo `Product` para garantizar que precios y nombres vienen del catalogo.
+- Los modelos de carrito usan `dataclass(frozen=True)`, siguiendo el patron de catalogo.
+- Los calculos monetarios usan `Decimal`.
+- Las operaciones de agregar, cambiar cantidad y eliminar quedan separadas para las siguientes sub-tareas.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `39 passed`.
+
+### Proximo paso
+
+Esperar aprobacion explicita para `2.2 Implementar agregar producto por product_id`.
+
+## 2026-07-22 - Sesion 11
+
+### Objetivo
+
+Ejecutar la sub-tarea `2.2 Implementar agregar producto por product_id`, aprobada por el usuario.
+
+### Justificacion
+
+Esta sub-tarea permite que el carrito empiece a modificarse desde una operacion determinista. Agregar por `product_id` evita depender de texto libre o precios enviados por el usuario, y prepara la UI para usar resultados reales del catalogo.
+
+### Cambios realizados
+
+- Se agrego `add_product_to_cart` en `src/patty_bot/cart.py`.
+- La funcion busca productos activos por `product_id`.
+- Si el carrito esta vacio, agrega una linea con cantidad `1`.
+- Si el producto ya existe en el carrito, incrementa su cantidad en una unidad.
+- Si el producto no existe o esta inactivo, lanza `ValueError`.
+- La funcion devuelve un nuevo `Cart` y no muta el carrito original.
+- Se agregaron tests en `tests/test_cart_add_product.py`.
+
+### Decisiones
+
+- Agregar el mismo producto no crea una linea duplicada; incrementa la cantidad existente.
+- La busqueda por ID exige productos activos para mantener la misma regla del catalogo ofrecible.
+- La cantidad explicita queda fuera hasta `2.3`.
+- La conexion con Streamlit queda fuera hasta `2.6`.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `45 passed`.
+
+### Proximo paso
+
+Esperar aprobacion explicita para `2.3 Implementar cambio y validacion de cantidades`.
+
+## 2026-07-22 - Sesion 12
+
+### Objetivo
+
+Ejecutar la sub-tarea `2.3 Implementar cambio y validacion de cantidades`, aprobada por el usuario.
+
+### Justificacion
+
+Esta sub-tarea permite corregir cantidades directamente sin depender de agregar el mismo producto varias veces. Es necesaria para que el pedido sea editable antes de confirmar.
+
+### Alcance ejecutado
+
+- Se agrego `change_cart_item_quantity` en `src/patty_bot/cart.py`.
+- La funcion identifica el item por `product_id`.
+- La funcion devuelve un nuevo `Cart`.
+- La funcion conserva los demas items del carrito.
+- La funcion recalcula subtotales a traves de `CartItem` y `Cart`.
+- La funcion reutiliza la validacion de cantidad de `CartItem`.
+- Se agregaron tests en `tests/test_cart_change_quantity.py`.
+
+### Fuera de alcance
+
+- Eliminar productos del carrito.
+- Interpretar cantidad cero como eliminacion.
+- Conectar el cambio de cantidad a Streamlit.
+- Calcular delivery y total final.
+- Guardar pedidos.
+- Interpretar texto libre con LLM.
+
+### Decisiones
+
+- Cantidad `0` sigue siendo invalida; eliminar un producto sera una operacion explicita en `2.4`.
+- Cambiar cantidad de un producto ausente lanza `ValueError`.
+- El carrito original no se muta.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `51 passed`.
+
+### Proximo paso
+
+Esperar aprobacion explicita para `2.4 Implementar eliminar productos del carrito`.
+
+## 2026-07-22 - Sesion 13
+
+### Objetivo
+
+Ejecutar las sub-tareas `2.4` a `2.8`, aprobadas por el usuario.
+
+### Justificacion
+
+El objetivo fue completar el corte vertical de carrito: eliminar productos, calcular totales, mostrarlo en Streamlit, agregar tests de aceptacion y cerrar formalmente la etapa.
+
+### Cambios realizados
+
+#### 2.4 Implementar eliminar productos del carrito
+
+- Se agrego `remove_product_from_cart` en `src/patty_bot/cart.py`.
+- La funcion elimina items por `product_id`.
+- La funcion devuelve un nuevo `Cart`.
+- La funcion rechaza productos que no estan en el carrito.
+- Se agregaron tests en `tests/test_cart_remove_product.py`.
+
+#### 2.5 Implementar calculo de subtotal, delivery y total
+
+- `Cart` ya calculaba `subtotal`.
+- Se agrego `Cart.delivery_fee`.
+- Se agrego `Cart.total`.
+- El delivery usa `DELIVERY_FEE` desde `src/patty_bot/config.py`.
+- Se agregaron tests en `tests/test_cart_totals.py`.
+
+#### 2.6 Conectar carrito minimo a Streamlit
+
+- Se inicializa `st.session_state.cart`.
+- La busqueda de catalogo permite agregar productos al carrito.
+- La app muestra items del carrito.
+- La app permite cambiar cantidades con un input numerico.
+- La app permite quitar productos.
+- La app muestra subtotal, delivery y total.
+
+#### 2.7 Agregar tests de aceptacion de carrito
+
+- Se agrego `tests/test_cart_acceptance.py`.
+- Se cubrio agregar dos productos.
+- Se cubrio cambiar cantidad.
+- Se cubrio rechazar cantidad invalida.
+- Se cubrio eliminar producto y recalcular subtotal.
+- Se cubrio rechazar producto inactivo del catalogo.
+
+#### 2.8 Validar Etapa 2 y registrar cierre
+
+- Se ejecuto la suite completa de tests.
+- Se verifico que Streamlit responde localmente.
+- Se actualizo `docs/planning/current-stage.md` para cerrar Etapa 2.
+- Se dejo propuesta la Etapa 3.
+
+### Decisiones
+
+- Eliminar productos es una operacion explicita; cantidad `0` sigue siendo invalida.
+- El delivery en Etapa 2 es fijo para permitir calcular total; la modalidad delivery/recojo se implementara en Etapa 3.
+- La UI de carrito en Streamlit es una herramienta de validacion, no la experiencia conversacional final.
+- Los tests de aceptacion usan precios reales de `data/catalog.sample.csv`.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `61 passed`.
+- OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
+
+### Proximo paso
+
+Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 3. Si se aprueban, explicar y pedir aprobacion especifica para ejecutar `3.1 Definir modelo minimo de datos del pedido`.
