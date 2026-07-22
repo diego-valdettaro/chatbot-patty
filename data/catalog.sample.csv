@@ -1,0 +1,31 @@
+id,name,aliases,category,price,active
+cake-red-velvet-mediana,Red Velvet mediana,red velvet mediana|torta red velvet mediana|red velvet,Tortas,85.00,true
+cake-red-velvet-grande,Red Velvet grande,red velvet grande|torta red velvet grande|red velvet,Tortas,125.00,true
+cake-zanahoria-grande,Torta de zanahoria grande,torta zanahoria|zanahoria|carrot cake,Tortas,95.00,true
+cake-chocolate-belga,Torta de chocolate belga,chocolate belga|torta chocolate|chocolate,Tortas,110.00,true
+cake-tres-leches,Tres leches,torta tres leches|3 leches,Tortas,90.00,true
+cake-limon,Torta de limon,pie de limon|limon,Tortas,82.00,true
+cake-vainilla-fresas,Torta de vainilla con fresas,vainilla fresas|torta vainilla,Tortas,88.00,true
+cake-moka,Torta moka,moka|torta de cafe,Tortas,92.00,true
+cake-naranja,Torta de naranja,naranja|torta naranja,Tortas,78.00,false
+brownie-chocolate-belga,Brownie de chocolate belga,brownie|brownies|brownie chocolate,Brownies,8.00,true
+brownie-nueces,Brownie con nueces,brownie nueces|brownies nueces,Brownies,9.00,true
+brownie-cheesecake,Brownie cheesecake,brownie queso|cheesecake brownie,Brownies,10.00,true
+cookie-chocolate-chip,Galleta chocolate chip,galleta chispas|cookie chocolate|choco chip,Galletas,6.00,true
+cookie-avena-pasas,Galleta de avena y pasas,avena pasas|galleta avena,Galletas,5.50,true
+cookie-red-velvet,Galleta red velvet,cookie red velvet|galleta velvet,Galletas,6.50,true
+cupcake-vainilla,Cupcake de vainilla,cupcake vainilla|quequito vainilla,Cupcakes,7.00,true
+cupcake-chocolate,Cupcake de chocolate,cupcake chocolate|quequito chocolate,Cupcakes,7.00,true
+cupcake-red-velvet,Cupcake red velvet,cupcake velvet,Cupcakes,7.50,true
+cheesecake-fresa,Cheesecake de fresa,cheesecake fresa|tarta queso fresa,Cheesecakes,75.00,true
+cheesecake-maracuya,Cheesecake de maracuya,cheesecake maracuya|maracuya,Cheesecakes,75.00,true
+cheesecake-oreo,Cheesecake de Oreo,cheesecake oreo|oreo,Cheesecakes,80.00,true
+pie-manzana,Pie de manzana,pie manzana|apple pie,Pies,68.00,true
+pie-pecanas,Pie de pecanas,pie pecanas|pecanas,Pies,72.00,true
+pie-limon,Pie de limon,pie limon|limon pie,Pies,70.00,true
+mini-tartaleta-frutas,Mini tartaleta de frutas,tartaleta frutas|mini tartaleta,Mini postres,12.00,true
+mini-cheesecake,Mini cheesecake,cheesecake individual|mini tarta queso,Mini postres,14.00,true
+alfajor-clasico,Alfajor clasico,alfajor|alfajores,Dulces,4.50,true
+trufa-chocolate,Trufa de chocolate,trufa|trufas,Dulces,5.00,true
+box-brownies-6,Caja de 6 brownies,caja brownies|box brownies|brownies x6,Boxes,45.00,true
+box-galletas-12,Caja de 12 galletas,caja galletas|box galletas|galletas x12,Boxes,60.00,true

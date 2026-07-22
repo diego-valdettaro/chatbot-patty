@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+pytest-cache-files-*/
+*.egg-info/
+.streamlit/*
+!.streamlit/config.toml
+data/*.sqlite3
+data/*.db
+.env
+streamlit.*.log
+tests/.tmp/
