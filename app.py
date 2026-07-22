@@ -1,8 +1,17 @@
+from datetime import date
+
 import streamlit as st
 
 from patty_bot.cart import Cart, add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
 from patty_bot.catalog import CatalogSearchResult, load_catalog, search_products
-from patty_bot.config import APP_TITLE, CATALOG_SAMPLE_PATH
+from patty_bot.config import APP_TITLE, CATALOG_SAMPLE_PATH, PICKUP_STORES
+from patty_bot.orders import (
+    OrderDetails,
+    delivery_fee_for_order,
+    minimum_requested_date,
+    total_for_order,
+    validate_order_details,
+)
 
 
 def initialize_session_state() -> None:
@@ -10,6 +19,8 @@ def initialize_session_state() -> None:
         st.session_state.messages = []
     if "cart" not in st.session_state:
         st.session_state.cart = Cart()
+    if "order_details" not in st.session_state:
+        st.session_state.order_details = OrderDetails(requested_date=minimum_requested_date())
 
 
 @st.cache_data
@@ -44,7 +55,7 @@ def render_catalog_result(result: CatalogSearchResult, catalog) -> None:
                 st.rerun()
 
 
-def render_cart() -> None:
+def render_cart(order_details: OrderDetails) -> None:
     st.subheader("Carrito")
     cart = st.session_state.cart
 
@@ -76,8 +87,68 @@ def render_cart() -> None:
                 st.rerun()
 
     st.metric("Subtotal", format_price(cart.subtotal))
-    st.metric("Delivery", format_price(cart.delivery_fee))
-    st.metric("Total", format_price(cart.total))
+    st.metric("Delivery", format_price(delivery_fee_for_order(order_details)))
+    st.metric("Total", format_price(total_for_order(cart, order_details)))
+
+
+def render_order_details() -> OrderDetails:
+    st.subheader("Datos del pedido")
+    current_details = st.session_state.order_details
+
+    customer_name = st.text_input("Nombre", value=current_details.customer_name)
+    customer_phone = st.text_input("Telefono", value=current_details.customer_phone)
+    fulfillment_label = st.radio(
+        "Modalidad",
+        options=("Delivery", "Recojo"),
+        index=0 if current_details.fulfillment_type == "delivery" else 1,
+        horizontal=True,
+    )
+    fulfillment_type = "delivery" if fulfillment_label == "Delivery" else "pickup"
+
+    delivery_address = ""
+    pickup_store = ""
+    if fulfillment_type == "delivery":
+        delivery_address = st.text_input("Direccion de delivery", value=current_details.delivery_address)
+    else:
+        pickup_store = st.selectbox(
+            "Tienda de recojo",
+            options=PICKUP_STORES,
+            index=_pickup_store_index(current_details.pickup_store),
+        )
+
+    requested_date = st.date_input(
+        "Fecha solicitada",
+        value=current_details.requested_date or minimum_requested_date(),
+        min_value=date.today(),
+    )
+
+    details = OrderDetails(
+        customer_name=customer_name,
+        customer_phone=customer_phone,
+        fulfillment_type=fulfillment_type,
+        requested_date=requested_date,
+        delivery_address=delivery_address,
+        pickup_store=pickup_store,
+    )
+    st.session_state.order_details = details
+
+    validation = validate_order_details(details)
+    if validation.is_valid:
+        st.success("Los datos del pedido estan completos para esta etapa.")
+    else:
+        st.warning("Faltan datos o hay datos invalidos.")
+        if validation.missing_fields:
+            st.caption("Faltantes: " + ", ".join(validation.missing_fields))
+        if validation.invalid_fields:
+            st.caption("Invalidos: " + ", ".join(validation.invalid_fields))
+
+    return details
+
+
+def _pickup_store_index(pickup_store: str) -> int:
+    if pickup_store in PICKUP_STORES:
+        return PICKUP_STORES.index(pickup_store)
+    return 0
 
 
 def main() -> None:
@@ -95,7 +166,11 @@ def main() -> None:
 
     st.divider()
 
-    render_cart()
+    order_details = render_order_details()
+
+    st.divider()
+
+    render_cart(order_details)
 
     st.divider()
 

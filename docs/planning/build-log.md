@@ -546,3 +546,54 @@ Al agregar varias unidades del mismo producto, el dominio sumaba bien la cantida
 - OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `61 passed`.
 - OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
 - Pendiente: validacion visual manual por usuario en navegador, porque el navegador integrado no estuvo disponible en esta sesion.
+
+## 2026-07-22 - Sesion 15
+
+### Objetivo
+
+Ejecutar completa la Etapa 3: datos obligatorios, modalidad y fecha.
+
+### Comentario de sub-etapas
+
+- `3.1`: se creo el modelo deterministico `OrderDetails`.
+- `3.2`: se modelaron modalidades `delivery` y `pickup`.
+- `3.3`: se implemento validacion de campos faltantes e invalidos.
+- `3.4`: se implemento regla de fecha minima con dos dias de anticipacion.
+- `3.5`: se ajusto delivery segun modalidad: S/ 10 para delivery y S/ 0 para recojo.
+- `3.6`: se conecto formulario minimo a Streamlit.
+- `3.7`: se agregaron tests de aceptacion de pedido.
+- `3.8`: se valido, documento y cerro la etapa.
+
+### Cambios realizados
+
+- Se creo `src/patty_bot/orders.py`.
+- Se agrego `OrderDetails`.
+- Se agrego `OrderValidationResult`.
+- Se agrego `validate_order_details`.
+- Se agrego `minimum_requested_date`.
+- Se agrego `delivery_fee_for_order`.
+- Se agrego `total_for_order`.
+- Se agregaron tests unitarios en `tests/test_order_details.py`.
+- Se agregaron tests de aceptacion en `tests/test_order_acceptance.py`.
+- Se conecto a Streamlit un formulario minimo de datos del pedido.
+- La app ahora permite capturar nombre, telefono, modalidad, direccion o tienda y fecha solicitada.
+- La app muestra faltantes e invalidos.
+- La app muestra delivery y total segun modalidad.
+
+### Decisiones
+
+- La fecha minima se calcula como `fecha actual + 2 dias`.
+- `delivery` requiere direccion.
+- `pickup` requiere tienda permitida.
+- Las tiendas permitidas siguen viniendo de `PICKUP_STORES`.
+- La confirmacion real y SQLite quedan fuera hasta Etapa 4.
+- El formulario actual sigue siendo una herramienta de validacion, no la experiencia final de chatbot.
+
+### Validaciones
+
+- OK: `.\.venv\Scripts\python.exe -m pytest` pasa con `76 passed`.
+- OK: Streamlit responde con HTTP 200 en `http://localhost:8501`.
+
+### Proximo paso
+
+Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 4.
