@@ -1,3 +1,5 @@
+"""Validation tests for immutable cart and cart-item models."""
+
 from decimal import Decimal
 
 import pytest

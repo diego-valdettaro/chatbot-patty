@@ -1,3 +1,5 @@
+"""Persistence acceptance tests for SQLite orders and their item snapshots."""
+
 import sqlite3
 from datetime import date
 from decimal import Decimal
@@ -67,7 +69,12 @@ def test_initialize_database_creates_order_tables():
 def test_save_confirmed_order_persists_order_and_items():
     db_path = make_db_path("save.sqlite3")
 
-    order_id = save_confirmed_order(db_path, make_cart(), make_details(), reference_date=REFERENCE_DATE)
+    confirmed_order = save_confirmed_order(db_path, make_cart(), make_details(), reference_date=REFERENCE_DATE)
+
+    assert confirmed_order.id is not None
+    assert confirmed_order.items[0].product_id == "brownie-chocolate-belga"
+    assert confirmed_order.subtotal == Decimal("16.00")
+    assert confirmed_order.total == Decimal("26.00")
 
     with sqlite3.connect(db_path) as connection:
         order = connection.execute(
@@ -77,7 +84,7 @@ def test_save_confirmed_order_persists_order_and_items():
             FROM orders
             WHERE id = ?
             """,
-            (order_id,),
+            (confirmed_order.id,),
         ).fetchone()
         items = connection.execute(
             """
@@ -85,7 +92,7 @@ def test_save_confirmed_order_persists_order_and_items():
             FROM order_items
             WHERE order_id = ?
             """,
-            (order_id,),
+            (confirmed_order.id,),
         ).fetchall()
 
     assert order == (
@@ -134,12 +141,15 @@ def test_save_confirmed_pickup_order_has_zero_delivery_fee():
         pickup_store="San Isidro",
     )
 
-    order_id = save_confirmed_order(db_path, make_cart(), details, reference_date=REFERENCE_DATE)
+    confirmed_order = save_confirmed_order(db_path, make_cart(), details, reference_date=REFERENCE_DATE)
+
+    assert confirmed_order.id is not None
+    assert confirmed_order.delivery_fee == Decimal("0")
 
     with sqlite3.connect(db_path) as connection:
         order = connection.execute(
             "SELECT fulfillment_type, pickup_store, subtotal, delivery_fee, total FROM orders WHERE id = ?",
-            (order_id,),
+            (confirmed_order.id,),
         ).fetchone()
 
     assert order == ("pickup", "San Isidro", "16.00", "0.00", "16.00")

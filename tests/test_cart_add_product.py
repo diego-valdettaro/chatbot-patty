@@ -1,3 +1,5 @@
+"""Unit tests for catalog-backed cart additions and quantity accumulation."""
+
 from decimal import Decimal
 
 import pytest

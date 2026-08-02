@@ -1,3 +1,5 @@
+"""Unit tests for catalog exact, category, and fuzzy search priority."""
+
 from pathlib import Path
 
 from patty_bot.catalog import (

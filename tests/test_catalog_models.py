@@ -1,3 +1,5 @@
+"""Validation tests for immutable catalog product and match models."""
+
 from decimal import Decimal
 
 import pytest

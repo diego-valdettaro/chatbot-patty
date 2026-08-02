@@ -1,3 +1,5 @@
+"""Focused tests for exact catalog name and alias lookup behavior."""
+
 from pathlib import Path
 
 from patty_bot.catalog import load_catalog, search_exact_products

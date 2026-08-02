@@ -1,3 +1,5 @@
+"""End-to-end domain scenarios for delivery and pickup order requirements."""
+
 from datetime import date
 from decimal import Decimal
 

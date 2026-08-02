@@ -1,3 +1,5 @@
+"""Unit tests for cart subtotal, default delivery fee, and total calculations."""
+
 from decimal import Decimal
 
 from patty_bot.cart import Cart, CartItem

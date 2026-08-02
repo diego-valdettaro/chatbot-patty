@@ -1,16 +1,15 @@
 import sqlite3
-from datetime import date, datetime
+from dataclasses import replace
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
 from patty_bot.cart import Cart
-from patty_bot.orders import OrderDetails, delivery_fee_for_order, total_for_order, validate_order_details
-
-
-ORDER_STATUS_PENDING = "Pendiente de pago y revision"
+from patty_bot.orders import ORDER_STATUS_PENDING, Order, OrderDetails, create_confirmed_order
 
 
 def initialize_database(path: str | Path) -> None:
+    # Schema setup is idempotent so the app and tools can call it before the first write.
     with sqlite3.connect(path) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
         connection.executescript(
@@ -49,11 +48,19 @@ def save_confirmed_order(
     cart: Cart,
     details: OrderDetails,
     reference_date: date | None = None,
-) -> int:
-    _validate_confirmable_order(cart, details, reference_date)
+) -> Order:
+    # Build the immutable snapshot before writing so persistence receives a complete aggregate.
+    order = create_confirmed_order(cart, details, reference_date=reference_date)
+    return save_order(path, order)
+
+
+def save_order(path: str | Path, order: Order) -> Order:
+    """Persist a confirmed order and return the same aggregate with its database ID."""
+
     initialize_database(path)
 
     with sqlite3.connect(path) as connection:
+        # The connection context commits both inserts together or rolls them back together on failure.
         connection.execute("PRAGMA foreign_keys = ON")
         cursor = connection.execute(
             """
@@ -73,23 +80,24 @@ def save_confirmed_order(
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                details.customer_name.strip(),
-                details.customer_phone.strip(),
-                details.fulfillment_type,
-                details.requested_date.isoformat() if details.requested_date else "",
-                details.delivery_address.strip() or None,
-                details.pickup_store.strip() or None,
-                _money(cart.subtotal),
-                _money(delivery_fee_for_order(details)),
-                _money(total_for_order(cart, details)),
-                ORDER_STATUS_PENDING,
-                datetime.now().isoformat(timespec="seconds"),
+                order.details.customer_name.strip(),
+                order.details.customer_phone.strip(),
+                order.details.fulfillment_type,
+                order.details.requested_date.isoformat() if order.details.requested_date else "",
+                order.details.delivery_address.strip() or None,
+                order.details.pickup_store.strip() or None,
+                _money(order.subtotal),
+                _money(order.delivery_fee),
+                _money(order.total),
+                order.status,
+                order.created_at.isoformat(timespec="seconds"),
             ),
         )
         order_id = cursor.lastrowid
         if order_id is None:
             raise RuntimeError("Could not create order.")
 
+        # Store a product snapshot so historical orders do not change when the catalog changes later.
         connection.executemany(
             """
             INSERT INTO order_items (
@@ -105,32 +113,20 @@ def save_confirmed_order(
             (
                 (
                     order_id,
-                    item.product.id,
-                    item.product.name,
-                    _money(item.product.price),
+                    item.product_id,
+                    item.product_name,
+                    _money(item.unit_price),
                     item.quantity,
                     _money(item.line_subtotal),
                 )
-                for item in cart.items
+                for item in order.items
             ),
         )
 
-    return order_id
-
-
-def _validate_confirmable_order(
-    cart: Cart,
-    details: OrderDetails,
-    reference_date: date | None = None,
-) -> None:
-    if cart.is_empty:
-        raise ValueError("Cannot confirm an empty cart.")
-
-    validation = validate_order_details(details, reference_date=reference_date)
-    if not validation.is_valid:
-        problems = (*validation.missing_fields, *validation.invalid_fields)
-        raise ValueError(f"Cannot confirm order with invalid details: {', '.join(problems)}")
+    # SQLite assigns the identity after insertion; the returned aggregate is the persisted order.
+    return replace(order, id=order_id)
 
 
 def _money(value: Decimal) -> str:
+    # SQLite stores money as fixed decimal text to avoid binary floating-point rounding.
     return f"{value:.2f}"

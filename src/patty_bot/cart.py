@@ -32,6 +32,7 @@ class Cart:
 
     @property
     def subtotal(self) -> Decimal:
+        # Start with Decimal zero to avoid mixing monetary values with integers or floats.
         return sum((item.line_subtotal for item in self.items), Decimal("0"))
 
     @property
@@ -44,10 +45,12 @@ class Cart:
 
 
 def add_product_to_cart(cart: Cart, products: Iterable[Product], product_id: str) -> Cart:
+    # Resolve against the active catalog on every add so retired products cannot enter a new cart.
     product = _find_active_product_by_id(products, product_id)
     updated_items: list[CartItem] = []
     product_was_in_cart = False
 
+    # Cart is immutable: rebuild its items and increment an existing line instead of duplicating it.
     for item in cart.items:
         if item.product.id == product.id:
             updated_items.append(CartItem(product=item.product, quantity=item.quantity + 1))

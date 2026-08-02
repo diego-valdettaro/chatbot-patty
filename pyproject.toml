@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "MVP local en Streamlit para el chatbot de pedidos Patty."
 requires-python = ">=3.11"
 dependencies = [
+    "langsmith>=0.4",
+    "openai>=2.0",
+    "python-dotenv>=1.0",
     "streamlit>=1.37",
 ]
 

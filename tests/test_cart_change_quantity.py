@@ -1,3 +1,5 @@
+"""Unit tests for cart quantity updates and their validation rules."""
+
 from decimal import Decimal
 
 import pytest

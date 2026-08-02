@@ -1,3 +1,5 @@
+"""Acceptance scenarios for catalog availability and search results."""
+
 from pathlib import Path
 
 from patty_bot.catalog import active_products, load_catalog, search_products

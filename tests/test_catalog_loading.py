@@ -1,3 +1,5 @@
+"""CSV loading tests covering catalog schema, parsing, and data integrity."""
+
 from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4

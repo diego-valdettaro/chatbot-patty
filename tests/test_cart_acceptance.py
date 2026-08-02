@@ -1,3 +1,5 @@
+"""Acceptance scenarios for the primary cart workflow and pricing behavior."""
+
 from decimal import Decimal
 from pathlib import Path
 

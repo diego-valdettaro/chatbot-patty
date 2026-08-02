@@ -1,3 +1,5 @@
+"""Minimal import-level health check for the local package."""
+
 from patty_bot.config import APP_TITLE, DELIVERY_FEE, PICKUP_STORES
 
 

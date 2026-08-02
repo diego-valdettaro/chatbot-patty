@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Literal
 
@@ -8,7 +8,10 @@ from patty_bot.config import DELIVERY_FEE, PICKUP_STORES
 
 
 FulfillmentType = Literal["delivery", "pickup"]
+# The requested production date must leave the business two full days of lead time.
 MINIMUM_ADVANCE_DAYS = 2
+# A confirmed local order still requires payment and operational review.
+ORDER_STATUS_PENDING = "Pendiente de pago y revision"
 
 
 @dataclass(frozen=True)
@@ -31,10 +34,62 @@ class OrderValidationResult:
         return not self.missing_fields and not self.invalid_fields
 
 
+@dataclass(frozen=True)
+class OrderItem:
+    """An immutable product snapshot captured when an order is confirmed."""
+
+    product_id: str
+    product_name: str
+    unit_price: Decimal
+    quantity: int
+    line_subtotal: Decimal
+
+    def __post_init__(self) -> None:
+        if not self.product_id.strip():
+            raise ValueError("Order item product id cannot be empty.")
+        if not self.product_name.strip():
+            raise ValueError("Order item product name cannot be empty.")
+        if self.unit_price < Decimal("0"):
+            raise ValueError("Order item unit price cannot be negative.")
+        if type(self.quantity) is not int or self.quantity <= 0:
+            raise ValueError("Order item quantity must be an integer greater than zero.")
+        if self.line_subtotal != self.unit_price * self.quantity:
+            raise ValueError("Order item subtotal must match unit price multiplied by quantity.")
+
+
+@dataclass(frozen=True)
+class Order:
+    """The immutable aggregate persisted after a valid cart is confirmed."""
+
+    details: OrderDetails
+    items: tuple[OrderItem, ...]
+    subtotal: Decimal
+    delivery_fee: Decimal
+    total: Decimal
+    status: str
+    created_at: datetime
+    id: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.id is not None and (type(self.id) is not int or self.id <= 0):
+            raise ValueError("Order id must be a positive integer when provided.")
+        if not self.items:
+            raise ValueError("Order must contain at least one item.")
+        if self.subtotal != sum((item.line_subtotal for item in self.items), Decimal("0")):
+            raise ValueError("Order subtotal must match its item subtotals.")
+        if self.delivery_fee < Decimal("0"):
+            raise ValueError("Order delivery fee cannot be negative.")
+        if self.total != self.subtotal + self.delivery_fee:
+            raise ValueError("Order total must match subtotal plus delivery fee.")
+        if not self.status.strip():
+            raise ValueError("Order status cannot be empty.")
+
+
 def validate_order_details(
     details: OrderDetails,
     reference_date: date | None = None,
 ) -> OrderValidationResult:
+    # reference_date makes date-dependent rules deterministic in tests and tool calls.
     today = reference_date or date.today()
     missing_fields: list[str] = []
     invalid_fields: list[str] = []
@@ -44,6 +99,7 @@ def validate_order_details(
     if not details.customer_phone.strip():
         missing_fields.append("customer_phone")
 
+    # Each fulfillment mode requires a different location field.
     if details.fulfillment_type == "delivery":
         if not details.delivery_address.strip():
             missing_fields.append("delivery_address")
@@ -72,6 +128,7 @@ def minimum_requested_date(reference_date: date | None = None) -> date:
 
 
 def delivery_fee_for_order(details: OrderDetails) -> Decimal:
+    # Pickup has no delivery charge even though a bare Cart exposes the default fee for the legacy UI.
     if details.fulfillment_type == "delivery":
         return Decimal(str(DELIVERY_FEE))
     return Decimal("0")
@@ -79,3 +136,42 @@ def delivery_fee_for_order(details: OrderDetails) -> Decimal:
 
 def total_for_order(cart: Cart, details: OrderDetails) -> Decimal:
     return cart.subtotal + delivery_fee_for_order(details)
+
+
+def create_confirmed_order(
+    cart: Cart,
+    details: OrderDetails,
+    reference_date: date | None = None,
+    created_at: datetime | None = None,
+) -> Order:
+    """Create the immutable order snapshot that can be safely persisted."""
+
+    if cart.is_empty:
+        raise ValueError("Cannot confirm an empty cart.")
+
+    validation = validate_order_details(details, reference_date=reference_date)
+    if not validation.is_valid:
+        problems = (*validation.missing_fields, *validation.invalid_fields)
+        raise ValueError(f"Cannot confirm order with invalid details: {', '.join(problems)}")
+
+    # Copy product values now so later catalog changes cannot alter this confirmed order.
+    items = tuple(
+        OrderItem(
+            product_id=item.product.id,
+            product_name=item.product.name,
+            unit_price=item.product.price,
+            quantity=item.quantity,
+            line_subtotal=item.line_subtotal,
+        )
+        for item in cart.items
+    )
+    delivery_fee = delivery_fee_for_order(details)
+    return Order(
+        details=details,
+        items=items,
+        subtotal=cart.subtotal,
+        delivery_fee=delivery_fee,
+        total=cart.subtotal + delivery_fee,
+        status=ORDER_STATUS_PENDING,
+        created_at=created_at or datetime.now(),
+    )

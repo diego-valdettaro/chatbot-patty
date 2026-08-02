@@ -1,10 +1,16 @@
-from datetime import date
+"""Unit tests for order-detail validation, dates, fulfillment, and pricing."""
+
+from datetime import date, datetime
 from decimal import Decimal
+
+import pytest
 
 from patty_bot.cart import Cart, CartItem
 from patty_bot.catalog import Product
 from patty_bot.orders import (
     OrderDetails,
+    OrderItem,
+    create_confirmed_order,
     delivery_fee_for_order,
     minimum_requested_date,
     total_for_order,
@@ -154,3 +160,41 @@ def test_total_for_order_uses_cart_subtotal_and_order_delivery_fee():
 
     assert total_for_order(cart, delivery) == Decimal("26.00")
     assert total_for_order(cart, pickup) == Decimal("16.00")
+
+
+def test_create_confirmed_order_snapshots_cart_items_and_calculated_amounts():
+    cart = Cart(items=(CartItem(product=make_product(), quantity=2),))
+    created_at = datetime(2026, 7, 22, 10, 30)
+
+    order = create_confirmed_order(
+        cart,
+        valid_delivery_details(),
+        reference_date=REFERENCE_DATE,
+        created_at=created_at,
+    )
+
+    assert order.id is None
+    assert order.created_at == created_at
+    assert order.items == (
+        OrderItem(
+            product_id="brownie-chocolate-belga",
+            product_name="Brownie de chocolate belga",
+            unit_price=Decimal("8.00"),
+            quantity=2,
+            line_subtotal=Decimal("16.00"),
+        ),
+    )
+    assert order.subtotal == Decimal("16.00")
+    assert order.delivery_fee == Decimal("10")
+    assert order.total == Decimal("26.00")
+
+
+def test_order_item_rejects_inconsistent_snapshot_subtotal():
+    with pytest.raises(ValueError, match="subtotal must match"):
+        OrderItem(
+            product_id="brownie-chocolate-belga",
+            product_name="Brownie de chocolate belga",
+            unit_price=Decimal("8.00"),
+            quantity=2,
+            line_subtotal=Decimal("15.00"),
+        )

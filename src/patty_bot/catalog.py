@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Iterable
 
 
+# Loading fails early when this minimal product contract is not present in the CSV.
 REQUIRED_CATALOG_COLUMNS = ("id", "name", "aliases", "category", "price", "active")
 SIMILARITY_THRESHOLD = 0.72
 
@@ -60,6 +61,7 @@ class CatalogSearchResult:
 
 
 def load_catalog(path: str | Path) -> tuple[Product, ...]:
+    # Validate every row before returning a catalog so downstream search can assume valid products.
     with Path(path).open(newline="", encoding="utf-8") as catalog_file:
         reader = csv.DictReader(catalog_file)
         _validate_required_columns(reader.fieldnames)
@@ -70,6 +72,7 @@ def load_catalog(path: str | Path) -> tuple[Product, ...]:
 
 
 def active_products(products: Iterable[Product]) -> tuple[Product, ...]:
+    # Inactive products remain in the source data but must never be offered to customers.
     return tuple(product for product in products if product.active)
 
 
@@ -78,6 +81,7 @@ def search_exact_products(products: Iterable[Product], query: str) -> CatalogSea
     if not normalized_query:
         return CatalogSearchResult(query=query, matches=())
 
+    # Exact names and aliases are the highest-confidence matches.
     matches: list[CatalogMatch] = []
     for product in active_products(products):
         normalized_name = _normalize_text(product.name)
@@ -97,6 +101,7 @@ def search_products(
     query: str,
     max_similarity_matches: int = 2,
 ) -> CatalogSearchResult:
+    # Preserve deterministic priority: exact match, then category, then limited fuzzy suggestions.
     exact_result = search_exact_products(products, query)
     if exact_result.found:
         return exact_result
@@ -130,6 +135,7 @@ def search_similar_products(
     if not normalized_query or max_matches <= 0:
         return CatalogSearchResult(query=query, matches=())
 
+    # Similarity is only a fallback to help with typos, never a replacement for exact catalog matches.
     scored_matches: list[CatalogMatch] = []
     for product in active_products(products):
         score = max(_similarity_score(normalized_query, candidate) for candidate in _search_candidates(product))
@@ -151,6 +157,7 @@ def _validate_required_columns(fieldnames: list[str] | None) -> None:
 
 
 def _product_from_row(row: dict[str, str], row_number: int) -> Product:
+    # Add the source row to parsing errors so catalog maintenance is actionable.
     try:
         return Product(
             id=row["id"].strip(),
@@ -186,6 +193,7 @@ def _parse_active(value: str, row_number: int) -> bool:
 
 
 def _validate_unique_ids(products: tuple[Product, ...]) -> None:
+    # Product IDs are stable references for cart items and persistence snapshots.
     seen_ids: set[str] = set()
     duplicate_ids: set[str] = set()
 
@@ -200,6 +208,7 @@ def _validate_unique_ids(products: tuple[Product, ...]) -> None:
 
 
 def _normalize_text(value: str) -> str:
+    # Search is accent- and whitespace-insensitive while retaining the original product display names.
     without_accents = "".join(
         character
         for character in unicodedata.normalize("NFD", value)

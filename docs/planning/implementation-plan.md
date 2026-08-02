@@ -10,14 +10,48 @@ La regla práctica es: primero construir un flujo pequeño que funcione de punta
 
 ```text
 Streamlit UI
-  -> Conversation service
-  -> Agent / intent interpreter
-  -> Deterministic application services
+  -> LLM agent router
+  -> Explicit tool registry
+  -> Deterministic domain services
        -> Catalog service
        -> Cart service
-       -> Order validation service
+       -> Order service
        -> SQLite repository
 ```
+
+## Current delivery plan (supersedes the original Stage 5 and Stage 6 below)
+
+The original deterministic conversation stage is not part of the implementation. The LLM will
+interpret user messages and choose tools; deterministic code remains responsible for domain rules,
+state changes, prices, validation, and persistence.
+
+### Stage 5 - Tool contracts and confirmed order model
+
+- Define JSON-serializable tool calls, results, and controlled errors.
+- Expose catalog, cart, and order operations as thin adapters over the domain.
+- Keep `Cart` and `CartItem` as the editable pre-confirmation state.
+- Model confirmed history separately:
+
+```text
+Cart + OrderDetails -> Order
+                         |- OrderItem[]
+                         |- subtotal, delivery_fee, total
+                         |- status, created_at, internal id
+```
+
+- `OrderItem` is an immutable product snapshot. It must not reference a live catalog product.
+- `OrderValidationResult` remains a transient result used before confirmation; it is not persisted.
+- The SQLite `orders` and `order_items` tables already support this model, so no schema migration is required.
+
+### Stage 6 - LLM agent router and Streamlit integration
+
+- Configure the LLM provider and system instructions.
+- Publish the explicit tool registry to the agent.
+- Keep session-owned `Cart`, `OrderDetails`, and confirmed `Order` on the server side.
+- Let the LLM interpret language and formulate replies, but never calculate prices or write SQLite directly.
+
+The detailed historical Stage 5 and Stage 6 descriptions remain below for traceability only and
+must not be used as the current execution plan.
 
 ## Estructura inicial propuesta
 

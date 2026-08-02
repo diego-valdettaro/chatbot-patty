@@ -644,3 +644,179 @@ Ejecutar completa la Etapa 4: persistencia SQLite y confirmacion real.
 ### Proximo paso
 
 Esperar aprobacion del usuario sobre las sub-tareas propuestas de Etapa 5.
+
+## 2026-07-24 - Sesion 17
+
+### Decision de arquitectura
+
+La etapa originalmente planteada como conversacion deterministica se reemplaza por una capa de tools estructuradas. No se implementaran respuestas por palabras clave, intenciones deterministicas ni un chatbot temporal que deba descartarse al integrar un LLM.
+
+### Razon
+
+El dominio deterministico ya implementado (catalogo, carrito, validacion, calculos y persistencia) es el sistema de verdad. El LLM sera responsable de interpretar el mensaje, decidir que tool invocar y redactar la respuesta. Las tools seran el contrato estable entre ambos.
+
+### Proximo paso
+
+Definir y aprobar las sub-tareas de Etapa 5: contratos de tools, herramientas de catalogo, carrito y pedido, registro de tools y tests directos.
+
+### Etapa 5.1 completada
+
+- Se creo `src/patty_bot/tools.py` con `ToolCall`, `ToolResult` y `ToolError`.
+- Los contratos aceptan y producen objetos JSON serializables.
+- Un resultado exitoso contiene datos y ningun error; un resultado fallido contiene errores controlados.
+- Se agregaron tests en `tests/test_tool_contracts.py`.
+- Validacion: `pytest` pasa con `88 passed`.
+
+### Etapa 5.2 completada
+
+- Se creo `src/patty_bot/catalog_tools.py` con la tool `search_catalog`.
+- La tool reutiliza `search_products` y serializa id, nombre, categoria, precio y metadatos de coincidencia.
+- Una busqueda sin coincidencias es un resultado exitoso vacio; una consulta ausente o invalida devuelve un error controlado.
+- Se agregaron tests en `tests/test_catalog_tools.py`.
+
+### Etapa 5.3 completada
+
+- Se creo `src/patty_bot/cart_tools.py` con tools para leer, agregar, cambiar cantidad y quitar productos del carrito.
+- Las operaciones que modifican carrito devuelven el nuevo estado interno y un snapshot serializable para el agente.
+- El snapshot incluye items y subtotal; delivery y total quedan para la capa de pedido porque dependen de la modalidad.
+- Los argumentos y errores de dominio se validan como resultados controlados.
+- Se agregaron tests en `tests/test_cart_tools.py`.
+
+### Etapa 5.4 completada
+
+- Se creo `src/patty_bot/order_tools.py` con tools para actualizar y validar datos, obtener resumen y confirmar pedidos.
+- La actualizacion acepta campos tipados y fecha ISO; la validacion se reutiliza desde `orders.py`.
+- El resumen reutiliza los calculos de subtotal, delivery y total del dominio.
+- La confirmacion valida antes de persistir y devuelve el ID solo como estado interno, no en el resultado para el agente.
+- Se agregaron tests en `tests/test_order_tools.py`.
+
+### Etapa 5.4.1 completada - Modelo de pedido confirmado
+
+- Se agregaron `OrderItem` y `Order` en `src/patty_bot/orders.py`.
+- `OrderItem` guarda el snapshot de producto, precio, cantidad y subtotal; no referencia al catalogo activo.
+- `Order` agrupa detalles, items, montos, estado, fecha de creacion e ID interno asignado por SQLite.
+- `create_confirmed_order` transforma `Cart + OrderDetails` en un pedido inmutable y validado.
+- `save_confirmed_order` ahora devuelve un `Order` persistido en lugar de un ID aislado.
+- Streamlit y la tool de confirmacion conservan el agregado `Order` en estado interno, sin exponer ID ni datos privados al agente o cliente.
+- No fue necesaria una migracion: las tablas existentes ya contienen el snapshot requerido.
+
+### Etapa 5.5 completada - Registro de tools
+
+- Se creo `src/patty_bot/tool_registry.py` como allowlist declarativa de tools visibles para el agente.
+- Cada definicion contiene nombre publico, descripcion, schema JSON, handler interno y requisito de confirmacion explicita.
+- `confirm_order` es la unica tool marcada como accion que requiere confirmacion del cliente.
+- El registro describe tools, pero no ejecuta handlers ni interpreta mensajes.
+- Se agregaron tests en `tests/test_tool_registry.py`.
+
+### Etapa 5.6 completada - Contratos y errores controlados
+
+- Se agregaron pruebas transversales para confirmar que las tools devuelven el contrato de error esperado ante argumentos invalidos.
+- Se verifico que operaciones fallidas no modifican el carrito ni los datos del pedido.
+- Se agrego cobertura para un error de SQLite: la tool devuelve `persistence_failure` sin propagar una excepcion al agente.
+- Se reforzo la validacion de `ToolDefinition` para rechazar schemas que no describan objetos JSON.
+
+### Etapa 5.7 completada - Validacion y cierre
+
+- `pytest` pasa con `110 passed`.
+- Streamlit responde con HTTP 200 en `http://localhost:8501`.
+- La Etapa 5 queda cerrada; la siguiente es Etapa 6, router LLM y ejecucion controlada de tools.
+
+### Etapa 6.1 completada - Configuracion local del proveedor LLM
+
+- Se selecciono OpenAI como el unico proveedor habilitado inicialmente.
+- Se agregaron `LLMSettings` y `load_llm_settings` en `src/patty_bot/config.py`.
+- La configuracion exige `PATTY_LLM_MODEL` y `OPENAI_API_KEY`; `PATTY_LLM_PROVIDER` usa `openai` por defecto.
+- Se agrego `.env.example` y documentacion de configuracion en `README.md`; `.env` permanece ignorado por Git.
+- La carga solo valida valores de entorno: no crea clientes ni realiza llamadas de red.
+- Se agregaron pruebas en `tests/test_llm_config.py` para configuracion valida, proveedor por defecto y rechazos controlados.
+- Validacion: `pytest` pasa con `115 passed`.
+
+### Etapa 6.2 completada - Adaptador de schemas OpenAI
+
+- Se creo `src/patty_bot/openai_tools.py` para convertir el registro de tools al formato de function calling de la Responses API.
+- El adaptador publica solamente metadata de funcion: no expone handlers Python ni el requisito interno de confirmacion.
+- Cada tool usa modo estricto. Los campos opcionales se representan como requeridos y anulables para cumplir las reglas del schema.
+- Se agregaron pruebas del formato, serializacion, contratos estrictos y schemas anidados.
+- Validacion: `tests/test_openai_tools.py` pasa con `4 passed`; la suite completa ejecuto `116 passed` antes de que tres pruebas preexistentes de SQLite fallaran al crear su directorio temporal por permisos del entorno.
+
+### Etapa 6.3 completada - Ejecutor controlado de tools
+
+- Se creo `src/patty_bot/tool_executor.py` con el estado de sesion que permanece en servidor durante la ejecucion de tools.
+- El ejecutor resuelve nombres exclusivamente a traves de la allowlist y devuelve `unknown_tool` para cualquier nombre no registrado.
+- Las mutaciones actualizan el estado inmutable de sesion; tras confirmar, las llamadas posteriores devuelven `order_already_confirmed`.
+- `confirm_order` requiere `explicit_confirmation=True`, que solo podra proporcionar la UI, no el LLM.
+- Se agregaron pruebas para estado, allowlist, normalizacion de nulls de strict mode, confirmacion protegida y bloqueo post-confirmacion.
+- Validacion: `tests/test_tool_executor.py tests/test_openai_tools.py` pasa con `9 passed`.
+
+### Etapa 6.4 completada - Router LLM y bucle agente-tool
+
+- Se creo `src/patty_bot/agent_router.py` con prompt de sistema, creacion perezosa del cliente OpenAI y bucle acotado de Responses API.
+- El bucle preserva las salidas del modelo, entrega los resultados de tools como `function_call_output` y vuelve a consultar al modelo para la respuesta final.
+- El modelo no puede aportar `explicit_confirmation`, por lo que una llamada conversacional a `confirm_order` siempre queda rechazada.
+- Se agregaron pruebas con un cliente simulado para ejecucion de tools, replay de resultados, proteccion de confirmacion y limite de rondas.
+
+### Etapa 6.5 completada - Chat de Streamlit
+
+- Se reemplazo el mensaje temporal del chat por el router LLM.
+- La app carga configuracion solo al recibir un mensaje, crea el cliente por sesion y sincroniza el estado resultante de carrito y pedido.
+- Si faltan variables, SDK o falla el proveedor, el cliente ve un mensaje seguro y no detalles internos.
+- Validacion: `tests/test_agent_router.py tests/test_tool_executor.py tests/test_openai_tools.py` pasa con `12 passed`.
+
+### Configuracion local `.env` actualizada
+
+- Se agrego `python-dotenv` y `load_llm_settings` ahora carga `PROJECT_ROOT/.env` cuando usa el entorno real, sin sobrescribir variables ya definidas en PowerShell.
+- `.env.example` contiene solo placeholders y `.env` permanece ignorado por Git.
+- Validacion: pruebas de configuracion, router y ejecutor pasan con `18 passed`.
+
+### Contexto conversacional entre turnos
+
+- El router ahora recibe el historial reciente del chat de Streamlit antes del mensaje nuevo.
+- Se conservan hasta 12 mensajes validos de usuario/asistente; mensajes internos o vacios no se envian al proveedor.
+- Esto permite interpretar referencias breves como "si", "dos mas" o "cambialo" usando el contexto anterior.
+- Validacion: pruebas de router, configuracion y ejecutor pasan con `16 passed`.
+
+### Etapa 6 cerrada - Router LLM y ejecucion de tools
+
+- El usuario valido manualmente la configuracion real de OpenAI y el flujo conversacional en Streamlit.
+- Se confirmo que el chat puede interpretar contexto reciente y reflejar cambios del pedido en la aplicacion.
+- La Etapa 6 queda cerrada con configuracion local, schemas, ejecutor protegido, router LLM, chat integrado y pruebas simuladas.
+
+### Etapa 7.1 completada - Estructura Streamlit centrada en el chat
+
+- Se reorganizó `app.py` para situar la conversación como panel principal del flujo de pedido.
+- Carrito, datos de entrega y confirmación siguen disponibles en un panel lateral de apoyo; el botón continúa siendo la única acción capaz de confirmar y persistir el pedido.
+- La búsqueda manual de catálogo se mantuvo como alternativa en un desplegable.
+- Validación: 130 pruebas pasaron. Tres pruebas que dependen de `tmp_path` no se iniciaron porque el entorno denegó acceso al directorio temporal de Pytest; no están relacionadas con el cambio de UI.
+
+### Etapa 7.2 completada - Escenarios conversacionales de aceptación
+
+- Se agregó `tests/test_conversation_acceptance.py` con escenarios de extremo a extremo para el router, el ejecutor y las tools usando un proveedor Responses simulado.
+- Se cubren un pedido válido de recojo con resumen, la modificación de cantidades apoyada en contexto previo y un producto sin disponibilidad que no altera el pedido.
+- Las aserciones se centran en el estado final y los resultados estructurados de tools, no en el texto variable que redactaría un LLM real.
+- Validación: `133 passed, 3 deselected`; los casos omitidos dependen de `tmp_path`, inaccesible por permisos del entorno.
+
+### Etapa 7.3 completada - Checklist manual de la interfaz
+
+- Se creó `docs/planning/stage-7-manual-checklist.md` con pasos y resultados esperados para validar visualmente el flujo chat-first.
+- Incluye pedido y edición por chat, revisión del panel lateral, alternativa manual, confirmación exclusiva por botón y bloqueo posterior.
+- La checklist queda preparada para ejecutarse en una sesión local con las credenciales configuradas antes del cierre de la etapa.
+- Streamlit respondió HTTP 200 en `http://localhost:8501`; la validación visual automatizada quedó pendiente por falta de navegador integrado en esta sesión.
+
+### Etapa 7 cerrada - Experiencia centrada en el chat
+
+- La Etapa 7 se cerró por aprobación expresa del usuario.
+- La checklist manual permanece disponible para una revisión visual posterior; no bloquea el avance de producto.
+
+### Configuracion recomendada de modelo
+
+- Se configura `gpt-5.6-terra` como ejemplo de modelo y `low` como esfuerzo de razonamiento predeterminado.
+- El router envia explicitamente `reasoning={"effort": ...}` en cada solicitud; el valor puede ajustarse con `PATTY_LLM_REASONING_EFFORT`.
+
+### Observabilidad obligatoria con LangSmith
+
+- Se agrego el SDK `langsmith` y el cliente OpenAI ahora se envuelve con `wrap_openai`.
+- El chat requiere `LANGSMITH_API_KEY`; al cargar la configuracion, el proyecto `patty-chatbot` y `LANGSMITH_TRACING=true` se establecen obligatoriamente.
+- Cada turno se registra como una traza principal y cada tool se registra como un hijo, junto con la llamada OpenAI envuelta automaticamente.
+- Se registran mensaje, contexto conversacional, modelo, esfuerzo de razonamiento, argumentos y resultados de tools, respuesta final y estado resumido del pedido.
+- Las credenciales no se incluyen como datos de las trazas manuales.
+- Validacion: pruebas de configuracion, router y ejecutor pasan con `19 passed`.

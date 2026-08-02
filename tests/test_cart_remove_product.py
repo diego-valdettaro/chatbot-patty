@@ -1,3 +1,5 @@
+"""Unit tests for immutable cart item removal and missing-product errors."""
+
 from decimal import Decimal
 
 import pytest
