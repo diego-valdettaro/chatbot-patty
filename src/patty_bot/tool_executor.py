@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
-from typing import Mapping
+from typing import Callable, Mapping
 
 from patty_bot.cart import Cart
 from patty_bot.cart_tools import add_to_cart, change_cart_quantity, get_cart, remove_from_cart
@@ -40,6 +40,9 @@ class ToolExecution:
     result: ToolResult
 
 
+ToolHandler = Callable[[AgentSession, Mapping[str, JsonValue]], ToolExecution]
+
+
 def execute_tool_call(
     session: AgentSession,
     tool_call: ToolCall,
@@ -66,44 +69,80 @@ def execute_tool_call(
             "Order confirmation requires an explicit customer action.",
         )
 
-    arguments = _arguments_for_domain_tool(tool_call)
-    if tool_call.name == "search_catalog":
-        return ToolExecution(session=session, result=search_catalog(session.products, arguments))
-    if tool_call.name == "get_cart":
-        return ToolExecution(session=session, result=get_cart(session.cart))
-    if tool_call.name == "add_to_cart":
-        execution = add_to_cart(session.cart, session.products, arguments)
-        return ToolExecution(session=replace(session, cart=execution.cart), result=execution.result)
-    if tool_call.name == "change_cart_quantity":
-        execution = change_cart_quantity(session.cart, arguments)
-        return ToolExecution(session=replace(session, cart=execution.cart), result=execution.result)
-    if tool_call.name == "remove_from_cart":
-        execution = remove_from_cart(session.cart, arguments)
-        return ToolExecution(session=replace(session, cart=execution.cart), result=execution.result)
-    if tool_call.name == "update_order_details":
-        execution = update_order_details(session.order_details, arguments, session.reference_date)
-        return ToolExecution(session=replace(session, order_details=execution.details), result=execution.result)
-    if tool_call.name == "validate_order_details":
-        return ToolExecution(
-            session=session,
-            result=validate_order_details_tool(session.order_details, session.reference_date),
-        )
-    if tool_call.name == "get_order_summary":
-        return ToolExecution(
-            session=session,
-            result=get_order_summary(session.cart, session.order_details, session.reference_date),
-        )
-    if tool_call.name == "confirm_order":
-        execution = confirm_order(
-            session.database_path,
-            session.cart,
-            session.order_details,
-            session.reference_date,
-        )
-        return ToolExecution(session=replace(session, confirmed_order=execution.order), result=execution.result)
+    handler = _TOOL_HANDLERS.get(tool_call.name)
+    if handler is None:
+        # The registry remains the allowlist; this guard identifies incomplete internal wiring.
+        return _failed_execution(session, "unsupported_tool", "This tool has no executor handler.")
+    return handler(session, _arguments_for_domain_tool(tool_call))
 
-    # The registry lookup above is the allowlist; this is a guard for future registry additions.
-    return _failed_execution(session, "unsupported_tool", "This tool has no executor handler.")
+
+def _execute_search_catalog(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    return ToolExecution(session=session, result=search_catalog(session.products, arguments))
+
+
+def _execute_get_cart(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    del arguments
+    return ToolExecution(session=session, result=get_cart(session.cart))
+
+
+def _execute_add_to_cart(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    execution = add_to_cart(session.cart, session.products, arguments)
+    return ToolExecution(session=replace(session, cart=execution.cart), result=execution.result)
+
+
+def _execute_change_cart_quantity(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    execution = change_cart_quantity(session.cart, arguments)
+    return ToolExecution(session=replace(session, cart=execution.cart), result=execution.result)
+
+
+def _execute_remove_from_cart(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    execution = remove_from_cart(session.cart, arguments)
+    return ToolExecution(session=replace(session, cart=execution.cart), result=execution.result)
+
+
+def _execute_update_order_details(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    execution = update_order_details(session.order_details, arguments, session.reference_date)
+    return ToolExecution(session=replace(session, order_details=execution.details), result=execution.result)
+
+
+def _execute_validate_order_details(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    del arguments
+    return ToolExecution(
+        session=session,
+        result=validate_order_details_tool(session.order_details, session.reference_date),
+    )
+
+
+def _execute_get_order_summary(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    del arguments
+    return ToolExecution(
+        session=session,
+        result=get_order_summary(session.cart, session.order_details, session.reference_date),
+    )
+
+
+def _execute_confirm_order(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    del arguments
+    execution = confirm_order(
+        session.database_path,
+        session.cart,
+        session.order_details,
+        session.reference_date,
+    )
+    return ToolExecution(session=replace(session, confirmed_order=execution.order), result=execution.result)
+
+
+_TOOL_HANDLERS: Mapping[str, ToolHandler] = {
+    "search_catalog": _execute_search_catalog,
+    "get_cart": _execute_get_cart,
+    "add_to_cart": _execute_add_to_cart,
+    "change_cart_quantity": _execute_change_cart_quantity,
+    "remove_from_cart": _execute_remove_from_cart,
+    "update_order_details": _execute_update_order_details,
+    "validate_order_details": _execute_validate_order_details,
+    "get_order_summary": _execute_get_order_summary,
+    "confirm_order": _execute_confirm_order,
+}
 
 
 def _arguments_for_domain_tool(tool_call: ToolCall) -> Mapping[str, JsonValue]:

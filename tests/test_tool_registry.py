@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from patty_bot.tool_executor import _TOOL_HANDLERS
 from patty_bot.tool_registry import TOOL_REGISTRY, ToolDefinition, agent_tool_definitions, get_tool_definition
 
 
@@ -29,14 +30,15 @@ def test_registry_schemas_are_json_serializable_and_disallow_unknown_arguments()
     assert all(definition["input_schema"]["additionalProperties"] is False for definition in definitions)
 
 
-def test_registry_maps_public_tools_to_their_explicit_handlers() -> None:
-    search_tool = get_tool_definition("search_catalog")
-    validation_tool = get_tool_definition("validate_order_details")
+def test_every_public_tool_has_a_private_handler() -> None:
+    assert {tool.name for tool in TOOL_REGISTRY} <= set(_TOOL_HANDLERS)
 
-    assert search_tool is not None
-    assert search_tool.handler == "patty_bot.catalog_tools.search_catalog"
-    assert validation_tool is not None
-    assert validation_tool.handler == "patty_bot.order_tools.validate_order_details_tool"
+
+def test_no_private_handler_exists_without_a_public_tool_definition() -> None:
+    assert set(_TOOL_HANDLERS) <= {tool.name for tool in TOOL_REGISTRY}
+
+
+def test_registry_returns_none_for_unknown_tools() -> None:
     assert get_tool_definition("unknown_tool") is None
 
 
@@ -54,5 +56,4 @@ def test_tool_definition_rejects_a_schema_that_does_not_describe_an_object() -> 
             name="invalid",
             description="Invalid schema example.",
             input_schema={"type": "string"},
-            handler="patty_bot.invalid",
         )
