@@ -11,7 +11,6 @@ class ToolDefinition:
     name: str
     description: str
     input_schema: Mapping[str, JsonValue]
-    handler: str
     requires_explicit_confirmation: bool = False
 
     def __post_init__(self) -> None:
@@ -19,8 +18,6 @@ class ToolDefinition:
             raise ValueError("Tool definition name cannot be empty.")
         if not self.description.strip():
             raise ValueError("Tool definition description cannot be empty.")
-        if not self.handler.strip():
-            raise ValueError("Tool definition handler cannot be empty.")
         if not isinstance(self.input_schema, Mapping) or self.input_schema.get("type") != "object":
             raise ValueError("Tool definition input schema must describe an object.")
 
@@ -31,7 +28,6 @@ class ToolDefinition:
             "name": self.name,
             "description": self.description,
             "input_schema": dict(self.input_schema),
-            "handler": self.handler,
             "requires_explicit_confirmation": self.requires_explicit_confirmation,
         }
 
@@ -47,13 +43,11 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
             "required": ["query"],
             "additionalProperties": False,
         },
-        handler="patty_bot.catalog_tools.search_catalog",
     ),
     ToolDefinition(
         name="get_cart",
         description="Return the current editable cart and its subtotal.",
         input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-        handler="patty_bot.cart_tools.get_cart",
     ),
     ToolDefinition(
         name="add_to_cart",
@@ -64,7 +58,6 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
             "required": ["product_id"],
             "additionalProperties": False,
         },
-        handler="patty_bot.cart_tools.add_to_cart",
     ),
     ToolDefinition(
         name="change_cart_quantity",
@@ -78,7 +71,6 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
             "required": ["product_id", "quantity"],
             "additionalProperties": False,
         },
-        handler="patty_bot.cart_tools.change_cart_quantity",
     ),
     ToolDefinition(
         name="remove_from_cart",
@@ -89,7 +81,6 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
             "required": ["product_id"],
             "additionalProperties": False,
         },
-        handler="patty_bot.cart_tools.remove_from_cart",
     ),
     ToolDefinition(
         name="update_order_details",
@@ -108,25 +99,21 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
             },
             "additionalProperties": False,
         },
-        handler="patty_bot.order_tools.update_order_details",
     ),
     ToolDefinition(
         name="validate_order_details",
         description="Report missing or invalid fields for the current draft order.",
         input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-        handler="patty_bot.order_tools.validate_order_details_tool",
     ),
     ToolDefinition(
         name="get_order_summary",
         description="Return subtotal, delivery fee, total, and validation for the current draft order.",
         input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-        handler="patty_bot.order_tools.get_order_summary",
     ),
     ToolDefinition(
         name="confirm_order",
         description="Persist the current valid order only after an explicit customer confirmation action.",
         input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-        handler="patty_bot.order_tools.confirm_order",
         requires_explicit_confirmation=True,
     ),
 )

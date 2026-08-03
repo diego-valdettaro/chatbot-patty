@@ -78,7 +78,6 @@ def test_adapter_normalizes_nested_object_properties() -> None:
             },
             "additionalProperties": False,
         },
-        handler="patty_bot.tests.nested",
     )
 
     parameters = openai_tool_definition(definition)["parameters"]

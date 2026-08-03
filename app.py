@@ -1,44 +1,44 @@
 from datetime import date
+from dataclasses import replace
+from uuid import uuid4
 
 import streamlit as st
 
-from patty_bot.agent_router import create_openai_client, run_agent_turn
-from patty_bot.cart import Cart, add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
+from patty_bot.cart import add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
 from patty_bot.catalog import CatalogSearchResult, load_catalog, search_products
+from patty_bot.application_logging import configure_application_logging
 from patty_bot.config import (
     APP_TITLE,
     CATALOG_SAMPLE_PATH,
     DATABASE_PATH,
-    LLMConfigurationError,
     PICKUP_STORES,
-    load_llm_settings,
 )
+from patty_bot.conversation import ConversationState
+from patty_bot.conversation_service import ConversationService
 from patty_bot.orders import (
     OrderDetails,
     delivery_fee_for_order,
-    minimum_requested_date,
     total_for_order,
     validate_order_details,
 )
 from patty_bot.repository import save_confirmed_order
-from patty_bot.tool_executor import AgentSession
+def initialize_session_state(catalog) -> None:
+    """Initialize UI state while ConversationService owns agent execution details."""
+
+    if "conversation_service" not in st.session_state:
+        st.session_state.conversation_service = ConversationService(catalog, DATABASE_PATH)
+    if "conversation_id" not in st.session_state:
+        st.session_state.conversation_id = str(uuid4())
+    if "conversation_state" not in st.session_state:
+        st.session_state.conversation_state = st.session_state.conversation_service.load_conversation(
+            st.session_state.conversation_id
+        )
 
 
-def initialize_session_state() -> None:
-    # Session state is the UI-owned boundary until the agent executor replaces this temporary flow.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    if "cart" not in st.session_state:
-        st.session_state.cart = Cart()
-    if "order_details" not in st.session_state:
-        st.session_state.order_details = OrderDetails(requested_date=minimum_requested_date())
-    if "confirmed_order" not in st.session_state:
-        # Keep the complete aggregate in session after confirmation, not just a disconnected ID.
-        st.session_state.confirmed_order = None
-    if "agent_client" not in st.session_state:
-        st.session_state.agent_client = None
-    if "agent_client_key" not in st.session_state:
-        st.session_state.agent_client_key = None
+def persist_conversation_state(state: ConversationState) -> None:
+    """Keep the UI cache aligned after a non-chat interaction changes the conversation."""
+
+    st.session_state.conversation_state = st.session_state.conversation_service.save_conversation(state)
 
 
 @st.cache_data
@@ -71,13 +71,20 @@ def render_catalog_result(result: CatalogSearchResult, catalog, disabled: bool =
         with columns[2]:
             if st.button("Agregar", key=f"add-{product.id}", disabled=disabled):
                 # Cart mutations stay in the domain layer; the UI only stores the returned immutable cart.
-                st.session_state.cart = add_product_to_cart(st.session_state.cart, catalog, product.id)
+                state = st.session_state.conversation_state
+                persist_conversation_state(
+                    replace(
+                        state,
+                        cart=add_product_to_cart(state.cart, catalog, product.id),
+                    )
+                )
                 st.rerun()
 
 
 def render_cart(order_details: OrderDetails, disabled: bool = False) -> None:
     st.subheader("Carrito")
-    cart = st.session_state.cart
+    state = st.session_state.conversation_state
+    cart = state.cart
 
     if cart.is_empty:
         st.info("El carrito esta vacio.")
@@ -99,13 +106,23 @@ def render_cart(order_details: OrderDetails, disabled: bool = False) -> None:
                 disabled=disabled,
             )
             if not disabled and quantity != item.quantity:
-                st.session_state.cart = change_cart_item_quantity(cart, item.product.id, int(quantity))
+                persist_conversation_state(
+                    replace(
+                        state,
+                        cart=change_cart_item_quantity(cart, item.product.id, int(quantity)),
+                    )
+                )
                 st.rerun()
         with columns[2]:
             st.write(format_price(item.line_subtotal))
         with columns[3]:
             if st.button("Quitar", key=f"remove-{item.product.id}", disabled=disabled):
-                st.session_state.cart = remove_product_from_cart(cart, item.product.id)
+                persist_conversation_state(
+                    replace(
+                        state,
+                        cart=remove_product_from_cart(cart, item.product.id),
+                    )
+                )
                 st.rerun()
 
     st.metric("Subtotal", format_price(cart.subtotal))
@@ -115,7 +132,7 @@ def render_cart(order_details: OrderDetails, disabled: bool = False) -> None:
 
 def render_order_details(disabled: bool = False) -> OrderDetails:
     st.subheader("Datos del pedido")
-    current_details = st.session_state.order_details
+    current_details = st.session_state.conversation_state.order_details
 
     customer_name = st.text_input("Nombre", value=current_details.customer_name, disabled=disabled)
     customer_phone = st.text_input("Telefono", value=current_details.customer_phone, disabled=disabled)
@@ -147,7 +164,8 @@ def render_order_details(disabled: bool = False) -> OrderDetails:
 
     requested_date = st.date_input(
         "Fecha solicitada",
-        value=current_details.requested_date or minimum_requested_date(),
+        # An empty date means the customer has not selected one; the minimum remains a validation rule.
+        value=current_details.requested_date,
         min_value=date.today(),
         disabled=disabled,
     )
@@ -160,7 +178,7 @@ def render_order_details(disabled: bool = False) -> OrderDetails:
         delivery_address=delivery_address,
         pickup_store=pickup_store,
     )
-    st.session_state.order_details = details
+    persist_conversation_state(replace(st.session_state.conversation_state, order_details=details))
 
     # Display domain validation without duplicating its rules in the form.
     validation = validate_order_details(details)
@@ -178,12 +196,13 @@ def render_order_details(disabled: bool = False) -> OrderDetails:
 
 def render_confirmation(order_details: OrderDetails) -> None:
     st.subheader("Confirmacion")
-    cart = st.session_state.cart
+    state = st.session_state.conversation_state
+    cart = state.cart
     validation = validate_order_details(order_details)
     # Confirmation is intentionally one-way in this MVP to prevent duplicate local orders.
-    can_confirm = not cart.is_empty and validation.is_valid and st.session_state.confirmed_order is None
+    can_confirm = not cart.is_empty and validation.is_valid and state.confirmed_order is None
 
-    if st.session_state.confirmed_order is not None:
+    if state.confirmed_order is not None:
         st.success("Pedido confirmado. Queda pendiente de pago y revision.")
         return
 
@@ -194,7 +213,12 @@ def render_confirmation(order_details: OrderDetails) -> None:
 
     if st.button("Confirmar pedido", disabled=not can_confirm):
         # Persistence remains a server-side operation; the internal ID is never displayed to the customer.
-        st.session_state.confirmed_order = save_confirmed_order(DATABASE_PATH, cart, order_details)
+        persist_conversation_state(
+            replace(
+                state,
+                confirmed_order=save_confirmed_order(DATABASE_PATH, cart, order_details),
+            )
+        )
         st.rerun()
 
 
@@ -204,48 +228,17 @@ def _pickup_store_index(pickup_store: str) -> int:
     return 0
 
 
-def respond_to_chat_message(user_message: str, catalog, conversation) -> str:
-    """Route one chat message through the LLM while keeping all order state in session."""
+def respond_to_chat_message(user_message: str) -> str:
+    """Delegate one chat message; ConversationService persists the resulting state."""
 
-    try:
-        settings = load_llm_settings()
-    except LLMConfigurationError:
-        return "El chat con Patty aun no esta configurado. Completa las variables del LLM para activarlo."
-
-    # Cache the client in this Streamlit session without putting the API key in displayed state.
-    if st.session_state.agent_client is None or st.session_state.agent_client_key != settings.api_key:
-        try:
-            st.session_state.agent_client = create_openai_client(settings)
-            st.session_state.agent_client_key = settings.api_key
-        except RuntimeError:
-            return "Falta instalar la dependencia de OpenAI. Ejecuta la instalacion del proyecto nuevamente."
-
-    agent_session = AgentSession(
-        products=tuple(catalog),
-        database_path=DATABASE_PATH,
-        cart=st.session_state.cart,
-        order_details=st.session_state.order_details,
-        confirmed_order=st.session_state.confirmed_order,
+    turn = st.session_state.conversation_service.handle_message(st.session_state.conversation_id, user_message)
+    st.session_state.conversation_state = st.session_state.conversation_service.load_conversation(
+        st.session_state.conversation_id
     )
-    try:
-        turn = run_agent_turn(
-            st.session_state.agent_client,
-            settings,
-            agent_session,
-            user_message,
-            conversation,
-        )
-    except Exception:
-        # Do not render provider errors because they may reveal operational details to customers.
-        return "No pude responder en este momento. Intenta nuevamente en unos instantes."
-
-    st.session_state.cart = turn.session.cart
-    st.session_state.order_details = turn.session.order_details
-    st.session_state.confirmed_order = turn.session.confirmed_order
     return turn.reply
 
 
-def render_chat(catalog) -> None:
+def render_chat() -> None:
     """Render the primary ordering surface and keep its input close to the conversation."""
 
     st.subheader("Habla con Patty")
@@ -253,38 +246,33 @@ def render_chat(catalog) -> None:
 
     conversation = st.container(height=520, border=True)
     with conversation:
-        if not st.session_state.messages:
+        if not st.session_state.conversation_state.messages:
             with st.chat_message("assistant"):
                 st.write("¡Hola! Cuéntame qué productos buscas para tu pedido.")
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
+        for message in st.session_state.conversation_state.messages:
+            with st.chat_message(message.role):
+                st.write(message.content)
 
     user_message = st.chat_input("Escribe un mensaje para Patty")
     if user_message:
-        st.session_state.messages.append({"role": "user", "content": user_message})
-        assistant_message = respond_to_chat_message(
-            user_message,
-            catalog,
-            st.session_state.messages[:-1],
-        )
-        st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+        respond_to_chat_message(user_message)
         st.rerun()
 
 
 def main() -> None:
+    configure_application_logging()
     st.set_page_config(page_title=APP_TITLE)
-    initialize_session_state()
+    catalog = get_catalog()
+    initialize_session_state(catalog)
 
     st.title(APP_TITLE)
     st.caption("Arma tu pedido conversando con Patty. Puedes revisar y confirmar los detalles a la derecha.")
     # Every editable area receives the same lock after a successful confirmation.
-    order_confirmed = st.session_state.confirmed_order is not None
-    catalog = get_catalog()
+    order_confirmed = st.session_state.conversation_state.confirmed_order is not None
 
     chat_column, order_column = st.columns((7, 5), gap="large")
     with chat_column:
-        render_chat(catalog)
+        render_chat()
 
         with st.expander("Buscar productos manualmente", expanded=False):
             st.write("Consulta el catálogo y agrega productos sin usar el chat.")
@@ -296,7 +284,7 @@ def main() -> None:
 
     with order_column:
         st.subheader("Tu pedido")
-        order_details = st.session_state.order_details
+        order_details = st.session_state.conversation_state.order_details
         render_cart(order_details, disabled=order_confirmed)
         st.divider()
         with st.expander("Datos de entrega", expanded=not order_confirmed):
