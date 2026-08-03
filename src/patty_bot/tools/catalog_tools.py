@@ -1,7 +1,7 @@
 from typing import Iterable, Mapping
 
-from patty_bot.catalog import CatalogMatch, Product, search_products
-from patty_bot.tools import JsonValue, ToolError, ToolResult, tool_failure, tool_success
+from patty_bot.domain.catalog import CatalogMatch, Product, search_products
+from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
 
 
 def search_catalog(

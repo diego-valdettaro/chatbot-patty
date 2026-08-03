@@ -3,12 +3,12 @@
 import logging
 from pathlib import Path
 
-from patty_bot.agent_router import AgentTurn
-from patty_bot.catalog import load_catalog
-from patty_bot.conversation import ConversationState
-from patty_bot.conversation_repository import ConversationRepository
-from patty_bot.config import LLMConfigurationError, LLMSettings
-from patty_bot.conversation_service import ConversationService
+from patty_bot.agent.router import AgentTurn
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.application.conversation_state import ConversationState
+from patty_bot.infrastructure.conversation_repository import ConversationRepository
+from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings
+from patty_bot.application.conversation_service import ConversationService
 
 
 SETTINGS = LLMSettings(
@@ -43,16 +43,16 @@ def test_handle_message_reuses_the_provider_client_and_returns_the_agent_turn(mo
     conversation_service = service(repository)
     client = object()
     calls = []
-    monkeypatch.setattr("patty_bot.conversation_service.load_llm_settings", lambda: SETTINGS)
-    monkeypatch.setattr("patty_bot.conversation_service.create_openai_client", lambda settings: client)
+    monkeypatch.setattr("patty_bot.application.conversation_service.load_llm_settings", lambda: SETTINGS)
+    monkeypatch.setattr("patty_bot.application.conversation_service.create_openai_client", lambda settings: client)
 
     def run_turn(received_client, settings, session, message, conversation):
         calls.append((received_client, settings, session, message, conversation))
         return AgentTurn(reply="Listo.", session=session)
 
-    monkeypatch.setattr("patty_bot.conversation_service.run_agent_turn", run_turn)
+    monkeypatch.setattr("patty_bot.application.conversation_service.run_agent_turn", run_turn)
     conversation_id = "conversation-1"
-    caplog.set_level(logging.INFO, logger="patty_bot.conversation_service")
+    caplog.set_level(logging.INFO, logger="patty_bot.application.conversation_service")
 
     first_turn = conversation_service.handle_message(conversation_id, "Hola")
     second_turn = conversation_service.handle_message(conversation_id, "Gracias")
@@ -77,10 +77,10 @@ def test_handle_message_keeps_the_current_session_when_configuration_is_unavaila
     conversation_service = service(repository)
     conversation_id = "conversation-1"
     monkeypatch.setattr(
-        "patty_bot.conversation_service.load_llm_settings",
+        "patty_bot.application.conversation_service.load_llm_settings",
         lambda: (_ for _ in ()).throw(LLMConfigurationError("missing settings")),
     )
-    caplog.set_level(logging.WARNING, logger="patty_bot.conversation_service")
+    caplog.set_level(logging.WARNING, logger="patty_bot.application.conversation_service")
 
     initial_state = conversation_service.load_conversation(conversation_id)
     turn = conversation_service.handle_message(conversation_id, "Hola")
@@ -102,13 +102,13 @@ def test_new_conversation_leaves_the_requested_date_unset_until_the_customer_pro
 def test_unexpected_provider_errors_are_logged_and_translated_to_the_safe_reply(monkeypatch, caplog) -> None:
     repository = InMemoryConversationRepository()
     conversation_service = service(repository)
-    monkeypatch.setattr("patty_bot.conversation_service.load_llm_settings", lambda: SETTINGS)
-    monkeypatch.setattr("patty_bot.conversation_service.create_openai_client", lambda settings: object())
+    monkeypatch.setattr("patty_bot.application.conversation_service.load_llm_settings", lambda: SETTINGS)
+    monkeypatch.setattr("patty_bot.application.conversation_service.create_openai_client", lambda settings: object())
     monkeypatch.setattr(
-        "patty_bot.conversation_service.run_agent_turn",
+        "patty_bot.application.conversation_service.run_agent_turn",
         lambda *_args: (_ for _ in ()).throw(RuntimeError("provider internals")),
     )
-    caplog.set_level(logging.ERROR, logger="patty_bot.conversation_service")
+    caplog.set_level(logging.ERROR, logger="patty_bot.application.conversation_service")
 
     turn = conversation_service.handle_message("conversation-1", "mensaje privado")
 
@@ -126,7 +126,7 @@ def test_persistence_errors_are_logged_and_translated_to_the_safe_reply(caplog) 
             raise OSError("database unavailable")
 
     conversation_service = service(FailingConversationRepository())
-    caplog.set_level(logging.ERROR, logger="patty_bot.conversation_service")
+    caplog.set_level(logging.ERROR, logger="patty_bot.application.conversation_service")
 
     turn = conversation_service.handle_message("conversation-1", "mensaje privado")
 

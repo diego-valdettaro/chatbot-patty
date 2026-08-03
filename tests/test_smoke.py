@@ -1,6 +1,6 @@
 """Minimal import-level health check for the local package."""
 
-from patty_bot.config import APP_TITLE, DELIVERY_FEE, PICKUP_STORES
+from patty_bot.infrastructure.config import APP_TITLE, DELIVERY_FEE, PICKUP_STORES
 
 
 def test_base_configuration_is_available():

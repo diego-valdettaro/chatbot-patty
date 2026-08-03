@@ -43,6 +43,12 @@ LANGSMITH_PROJECT=patty-chatbot
 Las variables definidas directamente en PowerShell tienen prioridad sobre los valores del `.env`.
 El chat requiere LangSmith y siempre envia trazas al proyecto configurado.
 
+## Catalogo
+
+El catalogo CSV incluye `servings_min` y `servings_max` para representar el rendimiento aproximado
+de un producto, y `allergens` para alergenos conocidos. Las porciones pueden quedar vacias cuando
+no apliquen; los alergenos se separan con `|`.
+
 ## Code comments
 
 Production code uses concise English comments to document business rules, layer boundaries,

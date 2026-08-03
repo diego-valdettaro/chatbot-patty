@@ -14,7 +14,7 @@ DELIVERY_FEE = 10
 PICKUP_STORES = ("Benavides", "San Isidro")
 
 # Resolve data paths from the repository instead of the process working directory.
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CATALOG_SAMPLE_PATH = PROJECT_ROOT / "data" / "catalog.sample.csv"
 DATABASE_PATH = PROJECT_ROOT / "data" / "patty.sqlite3"
 DOTENV_PATH = PROJECT_ROOT / ".env"

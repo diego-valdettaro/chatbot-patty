@@ -5,9 +5,9 @@ from decimal import Decimal
 
 import pytest
 
-from patty_bot.cart import Cart, CartItem
-from patty_bot.catalog import Product
-from patty_bot.orders import (
+from patty_bot.domain.cart import Cart, CartItem
+from patty_bot.domain.catalog import Product
+from patty_bot.domain.orders import (
     OrderDetails,
     OrderItem,
     create_confirmed_order,

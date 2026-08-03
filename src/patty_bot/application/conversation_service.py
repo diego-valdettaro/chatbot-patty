@@ -4,10 +4,10 @@ from collections.abc import Iterable
 import logging
 from pathlib import Path
 
-from patty_bot.agent_router import AgentTurn, ResponsesClient, create_openai_client, run_agent_turn
-from patty_bot.application_errors import AgentProviderError, ConversationPersistenceError
-from patty_bot.catalog import Product
-from patty_bot.conversation import (
+from patty_bot.agent.router import AgentTurn, ResponsesClient, create_openai_client, run_agent_turn
+from patty_bot.application.errors import AgentProviderError, ConversationPersistenceError
+from patty_bot.domain.catalog import Product
+from patty_bot.application.conversation_state import (
     ConversationMessage,
     ConversationState,
     ConversationStatus,
@@ -15,10 +15,10 @@ from patty_bot.conversation import (
     allows_order_modification,
     transition_status,
 )
-from patty_bot.conversation_repository import ConversationRepository, SQLiteConversationRepository
-from patty_bot.config import LLMConfigurationError, LLMSettings, load_llm_settings
-from patty_bot.orders import OrderDetails
-from patty_bot.tool_executor import AgentSession
+from patty_bot.infrastructure.conversation_repository import ConversationRepository, SQLiteConversationRepository
+from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings, load_llm_settings
+from patty_bot.domain.orders import OrderDetails
+from patty_bot.agent.tool_executor import AgentSession
 
 
 LOGGER = logging.getLogger(__name__)

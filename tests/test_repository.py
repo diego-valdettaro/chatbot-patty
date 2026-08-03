@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from patty_bot.cart import Cart, CartItem
-from patty_bot.catalog import Product
-from patty_bot.orders import OrderDetails
-from patty_bot.repository import ORDER_STATUS_PENDING, initialize_database, save_confirmed_order
+from patty_bot.domain.cart import Cart, CartItem
+from patty_bot.domain.catalog import Product
+from patty_bot.domain.orders import OrderDetails
+from patty_bot.infrastructure.repository import ORDER_STATUS_PENDING, initialize_database, save_confirmed_order
 
 
 TMP_DIR = Path("tests/.tmp")

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from patty_bot.catalog import load_catalog, search_exact_products
+from patty_bot.domain.catalog import load_catalog, search_exact_products
 
 
 CATALOG_SAMPLE_PATH = Path("data/catalog.sample.csv")
@@ -43,9 +43,9 @@ def test_search_exact_products_ignores_case_and_extra_spaces():
 def test_search_exact_products_ignores_accents():
     products = load_catalog(CATALOG_SAMPLE_PATH)
 
-    result = search_exact_products(products, "cheesecake de maracuyá")
+    result = search_exact_products(products, "bombita suspiro a la limena")
 
-    assert product_ids(result) == ("cheesecake-maracuya",)
+    assert product_ids(result) == ("bombita-suspiro-a-la-limena",)
 
 
 def test_search_exact_products_does_not_return_inactive_products():

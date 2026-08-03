@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from patty_bot.agent_router import run_agent_turn
-from patty_bot.catalog import load_catalog
-from patty_bot.config import LLMSettings
-from patty_bot.tool_executor import AgentSession, execute_tool_call
-from patty_bot.tools import ToolCall
+from patty_bot.agent.router import run_agent_turn
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.infrastructure.config import LLMSettings
+from patty_bot.agent.tool_executor import AgentSession, execute_tool_call
+from patty_bot.agent.tool_contracts import ToolCall
 
 
 class FakeResponses:
@@ -95,7 +95,7 @@ def test_chat_can_build_a_complete_pickup_order_and_get_its_summary() -> None:
     assert turn.session.order_details.pickup_store == "Benavides"
     summary_output = json.loads(client.responses.requests[-1]["input"][-1]["output"])
     assert summary_output["data"]["delivery_fee"] == "0.00"
-    assert summary_output["data"]["total"] == "85.00"
+    assert summary_output["data"]["total"] == "82.00"
     assert summary_output["data"]["validation"]["is_valid"] is True
 
 
@@ -128,12 +128,12 @@ def test_chat_can_apply_a_quantity_change_using_the_previous_conversation() -> N
 def test_chat_handles_an_unavailable_product_without_changing_the_order() -> None:
     client = FakeClient(
         [
-            tool_call("search_catalog", {"query": "torta de naranja"}, "search"),
+                tool_call("search_catalog", {"query": "paneton"}, "search"),
             {"output": [], "output_text": "No la tenemos disponible; puedo mostrarte alternativas."},
         ]
     )
 
-    turn = run_agent_turn(client, SETTINGS, session(), "Quiero una torta de naranja")
+    turn = run_agent_turn(client, SETTINGS, session(), "Quiero un paneton")
 
     assert turn.session.cart.is_empty
     search_output = json.loads(client.responses.requests[1]["input"][-1]["output"])

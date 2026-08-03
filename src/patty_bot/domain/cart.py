@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Iterable
 
-from patty_bot.catalog import Product
-from patty_bot.config import DELIVERY_FEE
+from patty_bot.domain.catalog import Product
+from patty_bot.infrastructure.config import DELIVERY_FEE
 
 
 @dataclass(frozen=True)

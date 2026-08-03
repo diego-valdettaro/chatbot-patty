@@ -4,13 +4,14 @@ import json
 
 import pytest
 
-from patty_bot.tool_executor import _TOOL_HANDLERS
-from patty_bot.tool_registry import TOOL_REGISTRY, ToolDefinition, agent_tool_definitions, get_tool_definition
+from patty_bot.agent.tool_executor import _TOOL_HANDLERS
+from patty_bot.agent.tool_registry import TOOL_REGISTRY, ToolDefinition, agent_tool_definitions, get_tool_definition
 
 
 def test_registry_exposes_the_expected_domain_tools() -> None:
     assert tuple(tool.name for tool in TOOL_REGISTRY) == (
         "search_catalog",
+        "recommend_products",
         "get_cart",
         "add_to_cart",
         "change_cart_quantity",
@@ -28,6 +29,18 @@ def test_registry_schemas_are_json_serializable_and_disallow_unknown_arguments()
     assert json.loads(json.dumps(definitions)) == list(definitions)
     assert all(definition["input_schema"]["type"] == "object" for definition in definitions)
     assert all(definition["input_schema"]["additionalProperties"] is False for definition in definitions)
+
+
+def test_recommendation_tool_schema_exposes_structured_optional_criteria() -> None:
+    definition = get_tool_definition("recommend_products")
+
+    assert definition is not None
+    assert definition.input_schema["properties"] == {
+        "category": {"type": "string", "minLength": 1},
+        "servings": {"type": "integer", "minimum": 0},
+        "excluded_allergens": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "max_price": {"type": "string", "minLength": 1},
+    }
 
 
 def test_every_public_tool_has_a_private_handler() -> None:

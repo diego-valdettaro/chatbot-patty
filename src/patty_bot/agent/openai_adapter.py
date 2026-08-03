@@ -3,8 +3,8 @@
 from collections.abc import Mapping
 from copy import deepcopy
 
-from patty_bot.tool_registry import TOOL_REGISTRY, ToolDefinition
-from patty_bot.tools import JsonValue
+from patty_bot.agent.tool_registry import TOOL_REGISTRY, ToolDefinition
+from patty_bot.agent.tool_contracts import JsonValue
 
 
 def openai_tool_definitions() -> tuple[dict[str, JsonValue], ...]:

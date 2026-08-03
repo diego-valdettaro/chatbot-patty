@@ -2,7 +2,7 @@
 
 import pytest
 
-from patty_bot.tools import ToolCall, ToolError, ToolResult, tool_failure, tool_success
+from patty_bot.agent.tool_contracts import ToolCall, ToolError, ToolResult, tool_failure, tool_success
 
 
 def test_tool_call_serializes_name_and_json_arguments() -> None:

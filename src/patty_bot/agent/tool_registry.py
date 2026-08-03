@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Mapping
 
-from patty_bot.tools import JsonValue
+from patty_bot.agent.tool_contracts import JsonValue
 
 
 @dataclass(frozen=True)
@@ -41,6 +41,23 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
             "type": "object",
             "properties": {"query": {"type": "string", "minLength": 1}},
             "required": ["query"],
+            "additionalProperties": False,
+        },
+    ),
+    ToolDefinition(
+        name="recommend_products",
+        description=(
+            "Recommend compatible catalog products when the customer describes needs or asks for help choosing; "
+            "use search_catalog when they know a product name, alias, or category."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "category": {"type": "string", "minLength": 1},
+                "servings": {"type": "integer", "minimum": 0},
+                "excluded_allergens": {"type": "array", "items": {"type": "string", "minLength": 1}},
+                "max_price": {"type": "string", "minLength": 1},
+            },
             "additionalProperties": False,
         },
     ),

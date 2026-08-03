@@ -4,24 +4,24 @@ from uuid import uuid4
 
 import streamlit as st
 
-from patty_bot.cart import add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
-from patty_bot.catalog import CatalogSearchResult, load_catalog, search_products
-from patty_bot.application_logging import configure_application_logging
-from patty_bot.config import (
+from patty_bot.domain.cart import add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
+from patty_bot.domain.catalog import CatalogSearchResult, load_catalog, search_products
+from patty_bot.application.logging import configure_application_logging
+from patty_bot.infrastructure.config import (
     APP_TITLE,
     CATALOG_SAMPLE_PATH,
     DATABASE_PATH,
     PICKUP_STORES,
 )
-from patty_bot.conversation import ConversationState
-from patty_bot.conversation_service import ConversationService
-from patty_bot.orders import (
+from patty_bot.application.conversation_state import ConversationState
+from patty_bot.application.conversation_service import ConversationService
+from patty_bot.domain.orders import (
     OrderDetails,
     delivery_fee_for_order,
     total_for_order,
     validate_order_details,
 )
-from patty_bot.repository import save_confirmed_order
+from patty_bot.infrastructure.repository import save_confirmed_order
 def initialize_session_state(catalog) -> None:
     """Initialize UI state while ConversationService owns agent execution details."""
 

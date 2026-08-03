@@ -4,8 +4,8 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from patty_bot.cart import Cart
-from patty_bot.orders import ORDER_STATUS_PENDING, Order, OrderDetails, create_confirmed_order
+from patty_bot.domain.cart import Cart
+from patty_bot.domain.orders import ORDER_STATUS_PENDING, Order, OrderDetails, create_confirmed_order
 
 
 def initialize_database(path: str | Path) -> None:

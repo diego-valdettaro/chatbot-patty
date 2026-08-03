@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from patty_bot.catalog import active_products, load_catalog
+from patty_bot.domain.catalog import active_products, load_catalog
 
 
 CATALOG_SAMPLE_PATH = Path("data/catalog.sample.csv")
@@ -23,28 +23,44 @@ def write_catalog(content: str) -> Path:
 def test_load_catalog_sample_file():
     products = load_catalog(CATALOG_SAMPLE_PATH)
 
-    assert len(products) == 30
+    assert len(products) == 183
 
 
 def test_load_catalog_sample_active_products():
     products = load_catalog(CATALOG_SAMPLE_PATH)
 
-    assert len(active_products(products)) == 29
-    assert sum(1 for product in products if not product.active) == 1
+    assert len(active_products(products)) == 183
+    assert sum(1 for product in products if not product.active) == 0
 
 
 def test_load_catalog_parses_aliases_and_decimal_price():
     products = load_catalog(CATALOG_SAMPLE_PATH)
     brownie = next(product for product in products if product.id == "brownie-chocolate-belga")
 
-    assert brownie.aliases == ("brownie", "brownies", "brownie chocolate")
+    assert brownie.aliases == ("brownie de chocolate belga", "brownie", "brownies", "brownie chocolate")
     assert brownie.price == Decimal("8.00")
+    assert brownie.servings_min == 1
+    assert brownie.servings_max == 1
+    assert brownie.allergens == ("gluten", "huevo", "lacteos")
+
+
+def test_load_catalog_parses_pipe_delimited_allergens_and_optional_servings():
+    catalog_path = write_catalog(
+        "id,name,aliases,category,price,active,servings_min,servings_max,allergens\n"
+        "brownie,Brownie,brownie,Brownies,8.00,true,,,nueces | lacteos\n",
+    )
+
+    product = load_catalog(catalog_path)[0]
+
+    assert product.servings_min is None
+    assert product.servings_max is None
+    assert product.allergens == ("nueces", "lacteos")
 
 
 def test_load_catalog_rejects_missing_required_column():
     catalog_path = write_catalog(
-        "id,name,aliases,category,price\n"
-        "brownie,Brownie,brownie,Brownies,8.00\n",
+        "id,name,aliases,category,price,servings_min,servings_max,allergens\n"
+        "brownie,Brownie,brownie,Brownies,8.00,,,\n",
     )
 
     with pytest.raises(ValueError, match="missing required columns: active"):
@@ -53,8 +69,8 @@ def test_load_catalog_rejects_missing_required_column():
 
 def test_load_catalog_rejects_invalid_price():
     catalog_path = write_catalog(
-        "id,name,aliases,category,price,active\n"
-        "brownie,Brownie,brownie,Brownies,ocho,true\n",
+        "id,name,aliases,category,price,active,servings_min,servings_max,allergens\n"
+        "brownie,Brownie,brownie,Brownies,ocho,true,,,\n",
     )
 
     with pytest.raises(ValueError, match="price must be a valid decimal"):
@@ -63,8 +79,8 @@ def test_load_catalog_rejects_invalid_price():
 
 def test_load_catalog_rejects_invalid_active_value():
     catalog_path = write_catalog(
-        "id,name,aliases,category,price,active\n"
-        "brownie,Brownie,brownie,Brownies,8.00,yes\n",
+        "id,name,aliases,category,price,active,servings_min,servings_max,allergens\n"
+        "brownie,Brownie,brownie,Brownies,8.00,yes,,,\n",
     )
 
     with pytest.raises(ValueError, match="active must be true or false"):
@@ -73,9 +89,9 @@ def test_load_catalog_rejects_invalid_active_value():
 
 def test_load_catalog_rejects_duplicate_ids():
     catalog_path = write_catalog(
-        "id,name,aliases,category,price,active\n"
-        "brownie,Brownie,brownie,Brownies,8.00,true\n"
-        "brownie,Brownie grande,brownie grande,Brownies,10.00,true\n",
+        "id,name,aliases,category,price,active,servings_min,servings_max,allergens\n"
+        "brownie,Brownie,brownie,Brownies,8.00,true,,,\n"
+        "brownie,Brownie grande,brownie grande,Brownies,10.00,true,,,\n",
     )
 
     with pytest.raises(ValueError, match="duplicate product ids: brownie"):

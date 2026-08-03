@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from patty_bot.cart import Cart
-from patty_bot.orders import Order, OrderDetails
+from patty_bot.domain.cart import Cart
+from patty_bot.domain.orders import Order, OrderDetails
 
 
 class ConversationStatus(str, Enum):

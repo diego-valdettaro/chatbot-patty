@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Iterable, Mapping
 
-from patty_bot.cart import Cart, add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
-from patty_bot.catalog import Product
-from patty_bot.tools import JsonValue, ToolError, ToolResult, tool_failure, tool_success
+from patty_bot.domain.cart import Cart, add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
+from patty_bot.domain.catalog import Product
+from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
 
 
 @dataclass(frozen=True)

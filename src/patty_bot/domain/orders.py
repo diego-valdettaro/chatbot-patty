@@ -3,8 +3,8 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Literal
 
-from patty_bot.cart import Cart
-from patty_bot.config import DELIVERY_FEE, PICKUP_STORES
+from patty_bot.domain.cart import Cart
+from patty_bot.infrastructure.config import DELIVERY_FEE, PICKUP_STORES
 
 
 FulfillmentType = Literal["delivery", "pickup"]

@@ -3,9 +3,9 @@
 from datetime import date
 from decimal import Decimal
 
-from patty_bot.cart import Cart, CartItem
-from patty_bot.catalog import Product
-from patty_bot.orders import OrderDetails, delivery_fee_for_order, total_for_order, validate_order_details
+from patty_bot.domain.cart import Cart, CartItem
+from patty_bot.domain.catalog import Product
+from patty_bot.domain.orders import OrderDetails, delivery_fee_for_order, total_for_order, validate_order_details
 
 
 REFERENCE_DATE = date(2026, 7, 22)
