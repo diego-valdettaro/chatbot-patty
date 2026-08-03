@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from patty_bot.cart import Cart
-from patty_bot.cart_tools import add_to_cart, change_cart_quantity, get_cart, remove_from_cart
-from patty_bot.catalog import load_catalog
+from patty_bot.domain.cart import Cart
+from patty_bot.tools.cart_tools import add_to_cart, change_cart_quantity, get_cart, remove_from_cart
+from patty_bot.domain.catalog import load_catalog
 
 
 CATALOG_SAMPLE_PATH = Path("data/catalog.sample.csv")
@@ -28,7 +28,7 @@ def test_add_to_cart_returns_updated_server_state_and_serialized_cart() -> None:
                     "product": {
                         "id": "brownie-chocolate-belga",
                         "name": "Brownie de chocolate belga",
-                        "category": "Brownies",
+                            "category": "Dulcecitos",
                         "price": "8.00",
                     },
                     "quantity": 1,

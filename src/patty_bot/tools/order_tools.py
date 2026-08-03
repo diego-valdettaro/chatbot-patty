@@ -4,10 +4,10 @@ from datetime import date
 from pathlib import Path
 from typing import Mapping
 
-from patty_bot.cart import Cart
-from patty_bot.orders import ORDER_STATUS_PENDING, Order, OrderDetails, OrderValidationResult, delivery_fee_for_order, total_for_order, validate_order_details
-from patty_bot.repository import save_confirmed_order
-from patty_bot.tools import JsonValue, ToolError, ToolResult, tool_failure, tool_success
+from patty_bot.domain.cart import Cart
+from patty_bot.domain.orders import ORDER_STATUS_PENDING, Order, OrderDetails, OrderValidationResult, delivery_fee_for_order, total_for_order, validate_order_details
+from patty_bot.infrastructure.repository import save_confirmed_order
+from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
 
 
 @dataclass(frozen=True)

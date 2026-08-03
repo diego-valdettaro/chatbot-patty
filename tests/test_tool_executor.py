@@ -3,11 +3,11 @@
 from datetime import date
 from pathlib import Path
 
-from patty_bot.catalog import load_catalog
-from patty_bot.order_tools import OrderConfirmationToolExecution
-from patty_bot.orders import OrderDetails, create_confirmed_order
-from patty_bot.tool_executor import AgentSession, execute_tool_call
-from patty_bot.tools import ToolCall, tool_success
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.tools.order_tools import OrderConfirmationToolExecution
+from patty_bot.domain.orders import OrderDetails, create_confirmed_order
+from patty_bot.agent.tool_executor import AgentSession, execute_tool_call
+from patty_bot.agent.tool_contracts import ToolCall, tool_success
 
 
 REFERENCE_DATE = date(2026, 7, 25)
@@ -28,6 +28,27 @@ def test_executor_uses_the_allowlist_and_keeps_session_on_unknown_tool() -> None
 
     assert execution.session is original
     assert execution.result.to_dict()["errors"][0]["code"] == "unknown_tool"
+
+
+def test_executor_runs_recommendations_as_a_read_only_tool() -> None:
+    original = session()
+
+    execution = execute_tool_call(
+        original,
+        ToolCall(
+            name="recommend_products",
+            arguments={
+                "category": "Tortas",
+                "servings": 10,
+                "excluded_allergens": [],
+                "max_price": "100.00",
+            },
+        ),
+    )
+
+    assert execution.session is original
+    assert execution.result.ok is True
+    assert execution.result.to_dict()["data"]["recommendations"]
 
 
 def test_executor_persists_cart_state_between_allowed_calls() -> None:
@@ -95,7 +116,7 @@ def test_executor_keeps_confirmed_order_server_side_and_locks_later_calls(monkey
     def fake_confirm_order(*_args, **_kwargs):
         return OrderConfirmationToolExecution(result=tool_success({"confirmed": True}), order=confirmed_order)
 
-    monkeypatch.setattr("patty_bot.tool_executor.confirm_order", fake_confirm_order)
+    monkeypatch.setattr("patty_bot.agent.tool_executor.confirm_order", fake_confirm_order)
     confirmed = execute_tool_call(
         ready.session, ToolCall(name="confirm_order"), explicit_confirmation=True
     )

@@ -5,19 +5,20 @@ from datetime import date
 from pathlib import Path
 from typing import Callable, Mapping
 
-from patty_bot.cart import Cart
-from patty_bot.cart_tools import add_to_cart, change_cart_quantity, get_cart, remove_from_cart
-from patty_bot.catalog import Product
-from patty_bot.catalog_tools import search_catalog
-from patty_bot.order_tools import (
+from patty_bot.domain.cart import Cart
+from patty_bot.tools.cart_tools import add_to_cart, change_cart_quantity, get_cart, remove_from_cart
+from patty_bot.domain.catalog import Product
+from patty_bot.tools.catalog_tools import search_catalog
+from patty_bot.tools.recommendation_tools import recommend_products
+from patty_bot.tools.order_tools import (
     confirm_order,
     get_order_summary,
     update_order_details,
     validate_order_details_tool,
 )
-from patty_bot.orders import Order, OrderDetails
-from patty_bot.tool_registry import get_tool_definition
-from patty_bot.tools import JsonValue, ToolCall, ToolError, ToolResult, tool_failure
+from patty_bot.domain.orders import Order, OrderDetails
+from patty_bot.agent.tool_registry import get_tool_definition
+from patty_bot.agent.tool_contracts import JsonValue, ToolCall, ToolError, ToolResult, tool_failure
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,10 @@ def _execute_search_catalog(session: AgentSession, arguments: Mapping[str, JsonV
     return ToolExecution(session=session, result=search_catalog(session.products, arguments))
 
 
+def _execute_recommend_products(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
+    return ToolExecution(session=session, result=recommend_products(session.products, arguments))
+
+
 def _execute_get_cart(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
     del arguments
     return ToolExecution(session=session, result=get_cart(session.cart))
@@ -134,6 +139,7 @@ def _execute_confirm_order(session: AgentSession, arguments: Mapping[str, JsonVa
 
 _TOOL_HANDLERS: Mapping[str, ToolHandler] = {
     "search_catalog": _execute_search_catalog,
+    "recommend_products": _execute_recommend_products,
     "get_cart": _execute_get_cart,
     "add_to_cart": _execute_add_to_cart,
     "change_cart_quantity": _execute_change_cart_quantity,

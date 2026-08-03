@@ -6,18 +6,21 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 import langsmith as ls
-from patty_bot.config import LLMSettings
-from patty_bot.openai_tools import openai_tool_definitions
-from patty_bot.tool_executor import AgentSession, execute_tool_call
-from patty_bot.tools import JsonValue, ToolCall, ToolError, tool_failure
+from patty_bot.infrastructure.config import LLMSettings
+from patty_bot.agent.openai_adapter import openai_tool_definitions
+from patty_bot.agent.tool_executor import AgentSession, execute_tool_call
+from patty_bot.agent.tool_contracts import JsonValue, ToolCall, ToolError, tool_failure
 
 
 SYSTEM_INSTRUCTIONS = """Eres Patty, asistente de pedidos de reposteria.
 Responde siempre en espanol y usa las tools disponibles para consultar o cambiar el pedido.
 Nunca inventes productos, precios, disponibilidad, subtotales, delivery, totales, fechas validas
-ni estados: obtenlos exclusivamente mediante una tool. Pide una aclaracion cuando haya ambiguedad.
-No proceses pagos ni prometas su estado. No confirmes pedidos: la confirmacion solo la realiza un
-boton explicito de la interfaz. Explica de forma breve los errores que devuelvan las tools."""
+ni estados: obtenlos exclusivamente mediante una tool. Usa search_catalog cuando el cliente sabe que
+producto busca por nombre, alias o categoria; usa recommend_products cuando describe necesidades o pide
+ayuda para elegir. Si faltan criterios relevantes para recomendar, haz una pregunta breve. No inventes
+razones distintas de las devueltas por recommend_products. No proceses pagos ni prometas su estado. No
+confirmes pedidos: la confirmacion solo la realiza un boton explicito de la interfaz. Explica de forma
+breve los errores que devuelvan las tools."""
 
 MAX_TOOL_ROUNDS = 8
 MAX_CONVERSATION_MESSAGES = 12

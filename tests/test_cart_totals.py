@@ -2,8 +2,8 @@
 
 from decimal import Decimal
 
-from patty_bot.cart import Cart, CartItem
-from patty_bot.catalog import Product
+from patty_bot.domain.cart import Cart, CartItem
+from patty_bot.domain.catalog import Product
 
 
 def make_product(

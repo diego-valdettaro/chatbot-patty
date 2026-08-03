@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from patty_bot.catalog import load_catalog
-from patty_bot.catalog_tools import search_catalog
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.tools.catalog_tools import search_catalog
 
 
 CATALOG_SAMPLE_PATH = Path("data/catalog.sample.csv")
@@ -24,7 +24,7 @@ def test_search_catalog_returns_structured_exact_match() -> None:
                     "product": {
                         "id": "brownie-chocolate-belga",
                         "name": "Brownie de chocolate belga",
-                        "category": "Brownies",
+                            "category": "Dulcecitos",
                         "price": "8.00",
                     },
                     "match_type": "exact_alias",

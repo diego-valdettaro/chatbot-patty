@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from patty_bot.catalog import load_catalog
-from patty_bot.conversation import ConversationState, ConversationStatus, transition_status
-from patty_bot.conversation_service import ConversationService
-from patty_bot.orders import OrderDetails
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.application.conversation_state import ConversationState, ConversationStatus, transition_status
+from patty_bot.application.conversation_service import ConversationService
+from patty_bot.domain.orders import OrderDetails
 
 
 class InMemoryConversationRepository:
@@ -74,7 +74,7 @@ def test_human_handoff_records_the_customer_message_without_running_the_agent(mo
     conversation_id = "conversation-1"
     conversation_service.transition_conversation(conversation_id, ConversationStatus.HUMAN_HANDOFF)
     monkeypatch.setattr(
-        "patty_bot.conversation_service.run_agent_turn",
+        "patty_bot.application.conversation_service.run_agent_turn",
         lambda *_args: pytest.fail("The automatic agent must not run during human handoff."),
     )
 

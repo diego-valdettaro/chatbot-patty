@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from patty_bot.config import LLMConfigurationError, LLMSettings, load_llm_settings
+from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings, load_llm_settings
 
 
 def test_load_llm_settings_returns_openai_configuration_from_environment() -> None:
@@ -53,7 +53,7 @@ def test_load_llm_settings_allows_an_explicit_reasoning_effort() -> None:
 
 def test_load_llm_settings_loads_dotenv_only_when_no_mapping_is_supplied(monkeypatch) -> None:
     loaded_paths = []
-    monkeypatch.setattr("patty_bot.config.load_dotenv", lambda path, override: loaded_paths.append((path, override)))
+    monkeypatch.setattr("patty_bot.infrastructure.config.load_dotenv", lambda path, override: loaded_paths.append((path, override)))
     monkeypatch.setenv("PATTY_LLM_MODEL", "test-model")
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setenv("LANGSMITH_API_KEY", "langsmith-test-key")

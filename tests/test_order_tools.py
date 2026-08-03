@@ -3,16 +3,16 @@
 from datetime import date
 from pathlib import Path
 
-from patty_bot.cart import Cart, add_product_to_cart
-from patty_bot.catalog import load_catalog
-from patty_bot.order_tools import (
+from patty_bot.domain.cart import Cart, add_product_to_cart
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.tools.order_tools import (
     confirm_order,
     get_order_summary,
     update_order_details,
     validate_order_details_tool,
 )
-from patty_bot.orders import OrderDetails
-from patty_bot.repository import ORDER_STATUS_PENDING
+from patty_bot.domain.orders import OrderDetails
+from patty_bot.infrastructure.repository import ORDER_STATUS_PENDING
 
 
 CATALOG_SAMPLE_PATH = Path("data/catalog.sample.csv")

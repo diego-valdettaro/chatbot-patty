@@ -8,10 +8,10 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Protocol
 
-from patty_bot.cart import Cart, CartItem
-from patty_bot.catalog import Product
-from patty_bot.conversation import ConversationMessage, ConversationState, ConversationStatus
-from patty_bot.orders import Order, OrderDetails, OrderItem
+from patty_bot.domain.cart import Cart, CartItem
+from patty_bot.domain.catalog import Product
+from patty_bot.application.conversation_state import ConversationMessage, ConversationState, ConversationStatus
+from patty_bot.domain.orders import Order, OrderDetails, OrderItem
 
 
 class ConversationRepository(Protocol):
@@ -143,6 +143,9 @@ def _product_to_data(product: Product) -> dict[str, object]:
         "category": product.category,
         "price": str(product.price),
         "active": product.active,
+        "servings_min": product.servings_min,
+        "servings_max": product.servings_max,
+        "allergens": list(product.allergens),
     }
 
 
@@ -156,6 +159,9 @@ def _product_from_data(data: object) -> Product:
         category=data["category"],
         price=Decimal(data["price"]),
         active=data["active"],
+        servings_min=data.get("servings_min"),
+        servings_max=data.get("servings_max"),
+        allergens=tuple(data.get("allergens", [])),
     )
 
 

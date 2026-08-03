@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from patty_bot.cart import (
+from patty_bot.domain.cart import (
     Cart,
     add_product_to_cart,
     change_cart_item_quantity,
     remove_product_from_cart,
 )
-from patty_bot.catalog import load_catalog
+from patty_bot.domain.catalog import load_catalog
 
 
 CATALOG_SAMPLE_PATH = Path("data/catalog.sample.csv")
@@ -32,9 +32,9 @@ def test_cart_acceptance_add_two_products_change_quantity_and_total():
         "brownie-chocolate-belga": 3,
         "cheesecake-oreo": 1,
     }
-    assert cart.subtotal == Decimal("104.00")
+    assert cart.subtotal == Decimal("41.00")
     assert cart.delivery_fee == Decimal("10")
-    assert cart.total == Decimal("114.00")
+    assert cart.total == Decimal("51.00")
 
 
 def test_cart_acceptance_reject_invalid_quantity():
@@ -53,8 +53,8 @@ def test_cart_acceptance_remove_product_recalculates_subtotal():
     cart = remove_product_from_cart(cart, "brownie-chocolate-belga")
 
     assert product_quantities(cart) == {"cheesecake-oreo": 1}
-    assert cart.subtotal == Decimal("80.00")
-    assert cart.total == Decimal("90.00")
+    assert cart.subtotal == Decimal("17.00")
+    assert cart.total == Decimal("27.00")
 
 
 def test_cart_acceptance_rejects_inactive_catalog_product():

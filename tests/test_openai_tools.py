@@ -2,8 +2,8 @@
 
 import json
 
-from patty_bot.openai_tools import openai_tool_definition, openai_tool_definitions
-from patty_bot.tool_registry import ToolDefinition
+from patty_bot.agent.openai_adapter import openai_tool_definition, openai_tool_definitions
+from patty_bot.agent.tool_registry import ToolDefinition
 
 
 def test_adapter_publishes_only_openai_function_metadata() -> None:
@@ -11,6 +11,7 @@ def test_adapter_publishes_only_openai_function_metadata() -> None:
 
     assert tuple(definition["name"] for definition in definitions) == (
         "search_catalog",
+        "recommend_products",
         "get_cart",
         "add_to_cart",
         "change_cart_quantity",
@@ -60,6 +61,22 @@ def test_adapter_preserves_required_arguments_without_making_them_nullable() -> 
         "properties": {"query": {"type": "string", "minLength": 1}},
         "required": ["query"],
         "additionalProperties": False,
+    }
+
+
+def test_adapter_makes_recommendation_criteria_nullable_and_required_for_strict_mode() -> None:
+    recommendation_tool = next(
+        definition for definition in openai_tool_definitions() if definition["name"] == "recommend_products"
+    )
+
+    assert recommendation_tool["parameters"]["required"] == [
+        "category",
+        "servings",
+        "excluded_allergens",
+        "max_price",
+    ]
+    assert recommendation_tool["parameters"]["properties"]["max_price"] == {
+        "anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}]
     }
 
 

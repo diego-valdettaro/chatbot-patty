@@ -4,11 +4,11 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from patty_bot.cart import Cart, CartItem
-from patty_bot.catalog import Product
-from patty_bot.conversation import ConversationMessage, ConversationState, ConversationStatus
-from patty_bot.conversation_repository import SQLiteConversationRepository
-from patty_bot.orders import OrderDetails
+from patty_bot.domain.cart import Cart, CartItem
+from patty_bot.domain.catalog import Product
+from patty_bot.application.conversation_state import ConversationMessage, ConversationState, ConversationStatus
+from patty_bot.infrastructure.conversation_repository import SQLiteConversationRepository
+from patty_bot.domain.orders import OrderDetails
 
 
 def test_sqlite_repository_round_trips_the_state_required_for_the_next_turn(tmp_path) -> None:
@@ -20,6 +20,9 @@ def test_sqlite_repository_round_trips_the_state_required_for_the_next_turn(tmp_
         category="Brownies",
         price=Decimal("8.00"),
         active=True,
+        servings_min=1,
+        servings_max=1,
+        allergens=("nueces",),
     )
     state = ConversationState(
         conversation_id="web-session-1",

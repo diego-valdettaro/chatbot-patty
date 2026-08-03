@@ -6,15 +6,15 @@ from pathlib import Path
 
 import pytest
 
-from patty_bot.agent_router import (
+from patty_bot.agent.router import (
     MAX_CONVERSATION_MESSAGES,
     MAX_TOOL_ROUNDS,
     SYSTEM_INSTRUCTIONS,
     run_agent_turn,
 )
-from patty_bot.catalog import load_catalog
-from patty_bot.config import LLMSettings
-from patty_bot.tool_executor import AgentSession
+from patty_bot.domain.catalog import load_catalog
+from patty_bot.infrastructure.config import LLMSettings
+from patty_bot.agent.tool_executor import AgentSession
 
 
 class FakeResponses:
@@ -83,6 +83,11 @@ def test_router_executes_a_tool_and_returns_the_follow_up_reply() -> None:
     replayed_input = client.responses.requests[1]["input"]
     assert replayed_input[-1]["type"] == "function_call_output"
     assert json.loads(replayed_input[-1]["output"])["ok"] is True
+
+
+def test_instructions_distinguish_catalog_search_from_recommendations() -> None:
+    assert "search_catalog cuando el cliente sabe" in SYSTEM_INSTRUCTIONS
+    assert "recommend_products cuando describe necesidades" in SYSTEM_INSTRUCTIONS
 
 
 def test_router_never_allows_the_model_to_confirm_an_order() -> None:

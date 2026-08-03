@@ -1,31 +1,184 @@
-id,name,aliases,category,price,active
-cake-red-velvet-mediana,Red Velvet mediana,red velvet mediana|torta red velvet mediana|red velvet,Tortas,85.00,true
-cake-red-velvet-grande,Red Velvet grande,red velvet grande|torta red velvet grande|red velvet,Tortas,125.00,true
-cake-zanahoria-grande,Torta de zanahoria grande,torta zanahoria|zanahoria|carrot cake,Tortas,95.00,true
-cake-chocolate-belga,Torta de chocolate belga,chocolate belga|torta chocolate|chocolate,Tortas,110.00,true
-cake-tres-leches,Tres leches,torta tres leches|3 leches,Tortas,90.00,true
-cake-limon,Torta de limon,pie de limon|limon,Tortas,82.00,true
-cake-vainilla-fresas,Torta de vainilla con fresas,vainilla fresas|torta vainilla,Tortas,88.00,true
-cake-moka,Torta moka,moka|torta de cafe,Tortas,92.00,true
-cake-naranja,Torta de naranja,naranja|torta naranja,Tortas,78.00,false
-brownie-chocolate-belga,Brownie de chocolate belga,brownie|brownies|brownie chocolate,Brownies,8.00,true
-brownie-nueces,Brownie con nueces,brownie nueces|brownies nueces,Brownies,9.00,true
-brownie-cheesecake,Brownie cheesecake,brownie queso|cheesecake brownie,Brownies,10.00,true
-cookie-chocolate-chip,Galleta chocolate chip,galleta chispas|cookie chocolate|choco chip,Galletas,6.00,true
-cookie-avena-pasas,Galleta de avena y pasas,avena pasas|galleta avena,Galletas,5.50,true
-cookie-red-velvet,Galleta red velvet,cookie red velvet|galleta velvet,Galletas,6.50,true
-cupcake-vainilla,Cupcake de vainilla,cupcake vainilla|quequito vainilla,Cupcakes,7.00,true
-cupcake-chocolate,Cupcake de chocolate,cupcake chocolate|quequito chocolate,Cupcakes,7.00,true
-cupcake-red-velvet,Cupcake red velvet,cupcake velvet,Cupcakes,7.50,true
-cheesecake-fresa,Cheesecake de fresa,cheesecake fresa|tarta queso fresa,Cheesecakes,75.00,true
-cheesecake-maracuya,Cheesecake de maracuya,cheesecake maracuya|maracuya,Cheesecakes,75.00,true
-cheesecake-oreo,Cheesecake de Oreo,cheesecake oreo|oreo,Cheesecakes,80.00,true
-pie-manzana,Pie de manzana,pie manzana|apple pie,Pies,68.00,true
-pie-pecanas,Pie de pecanas,pie pecanas|pecanas,Pies,72.00,true
-pie-limon,Pie de limon,pie limon|limon pie,Pies,70.00,true
-mini-tartaleta-frutas,Mini tartaleta de frutas,tartaleta frutas|mini tartaleta,Mini postres,12.00,true
-mini-cheesecake,Mini cheesecake,cheesecake individual|mini tarta queso,Mini postres,14.00,true
-alfajor-clasico,Alfajor clasico,alfajor|alfajores,Dulces,4.50,true
-trufa-chocolate,Trufa de chocolate,trufa|trufas,Dulces,5.00,true
-box-brownies-6,Caja de 6 brownies,caja brownies|box brownies|brownies x6,Boxes,45.00,true
-box-galletas-12,Caja de 12 galletas,caja galletas|box galletas|galletas x12,Boxes,60.00,true
+id,name,aliases,category,price,active,servings_min,servings_max,allergens
+alfajor-clasico,Alfajor clasico,alfajor clasico,Dulcecitos,8.00,true,1,1,gluten|huevo|lacteos
+alfajor-dubai-de-crema-de-avellanas,Alfajor dubai de crema de avellanas,alfajor dubai de crema de avellanas,Dulcecitos,15.00,true,1,1,gluten|huevo|lacteos|frutos secos
+alfajor-dubai-de-frambuesa,Alfajor dubai de frambuesa,alfajor dubai de frambuesa|alfajor dubai de frambuesa san valentin,Dulcecitos,16.90,true,1,1,gluten|huevo|lacteos
+alfajor-dubai-de-pistacho,Alfajor dubai de pistacho,alfajor dubai de pistacho,Dulcecitos,15.00,true,1,1,gluten|huevo|lacteos|frutos secos
+arroz-con-leche-indiv,Arroz con leche indiv,arroz con leche indiv,Individuales,13.90,true,1,1,huevo|lacteos
+blondie,Blondie,blondie,Dulcecitos,9.00,true,1,1,gluten|huevo|lacteos
+bombita-arroz-con-leche,Bombita arroz con leche,bombita arroz con leche,Individuales,15.00,true,1,1,huevo|lacteos
+bombita-de-alfajor,Bombita de alfajor,bombita de alfajor,Individuales,17.00,true,1,1,gluten|huevo|lacteos
+bombita-de-aniversario,Bombita de aniversario,bombita de aniversario,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-de-chirimoya,Bombita de chirimoya,bombita de chirimoya,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-de-chocolucuma,Bombita de chocolucuma,bombita de chocolucuma,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-de-chocopistacho,Bombita de chocopistacho,bombita de chocopistacho,Individuales,22.00,true,1,1,gluten|huevo|lacteos|frutos secos
+bombita-de-frutos-rojos,Bombita de frutos rojos,bombita de frutos rojos,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-de-maracumango,Bombita de maracumango,bombita de maracumango,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-de-tres-leches-de-pistacho,Bombita de tres leches de pistacho,bombita de tres leches de pistacho,Individuales,22.00,true,1,1,gluten|huevo|lacteos|frutos secos
+bombita-dot-cake-chocolate,Bombita dot cake chocolate,bombita dot cake chocolate,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-dot-cake-vainilla,Bombita dot cake vainilla,bombita dot cake vainilla,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-suspiro-a-la-limena,Bombita suspiro a la limeña,bombita suspiro a la limeña,Individuales,15.00,true,1,1,gluten|huevo|lacteos
+bombita-tres-leches-de-lucuma,Bombita tres leches de lucuma,bombita tres leches de lucuma,Individuales,22.00,true,1,1,gluten|huevo|lacteos
+bombita-turron-de-dona-pepa,Bombita turron de dona pepa,bombita turron de dona pepa,Individuales,17.00,true,1,1,gluten|huevo|lacteos
+bosque-encantado-de-chocolate-grande,Bosque encantado de chocolate grande,bosque encantado de chocolate grande|bosque encantado de chocolate grande dia de la madre,Tortas,109.00,true,12,16,gluten|huevo|lacteos
+bosque-encantado-de-chocolate-mediano,Bosque encantado de chocolate mediano,bosque encantado de chocolate mediano|bosque encantado de chocolate mediano dia de la madre,Tortas,89.00,true,8,10,gluten|huevo|lacteos
+bosque-encantado-de-manjar-grande,Bosque encantado de manjar grande,bosque encantado de manjar grande|bosque encantado de manjar grande dia de la madre,Tortas,109.00,true,12,16,gluten|huevo|lacteos
+bosque-encantado-de-manjar-mediano,Bosque encantado de manjar mediano,bosque encantado de manjar mediano|bosque encantado de manjar mediano dia de la madre,Tortas,89.00,true,8,10,gluten|huevo|lacteos
+bosque-magico-de-zanahoria-grande,Bosque magico de zanahoria grande,bosque magico de zanahoria grande|bosque magico de zanahoria grande dia de la madre,Tortas,109.00,true,12,16,gluten|huevo|lacteos
+bosque-magico-de-zanahoria-mediano,Bosque magico de zanahoria mediano,bosque magico de zanahoria mediano|bosque magico de zanahoria mediano dia de la madre,Tortas,89.00,true,8,10,gluten|huevo|lacteos
+brownie-chocolate-belga,Brownie de chocolate belga,brownie de chocolate belga|brownie|brownies|brownie chocolate,Dulcecitos,8.00,true,1,1,gluten|huevo|lacteos
+brownie-dubai-de-crema-de-avellanas,Brownie dubai de crema de avellanas,brownie dubai de crema de avellanas,Dulcecitos,17.00,true,1,1,gluten|huevo|lacteos|frutos secos
+brownie-dubai-de-pistacho,Brownie dubai de pistacho,brownie dubai de pistacho,Dulcecitos,17.00,true,1,1,gluten|huevo|lacteos|frutos secos
+caja-de-alfajores-dubai-x6,Caja de alfajores dubai x6,caja de alfajores dubai x6,Packs de dulcecitos,85.00,true,6,6,gluten|huevo|lacteos
+caja-de-alfajores-x6-unid,Caja de alfajores x6 unid,caja de alfajores x6 unid,Packs de dulcecitos,45.00,true,6,6,gluten|huevo|lacteos
+box-brownies-6,Caja de brownies belga x6,caja de brownies belga x6|brownies x6|box brownies,Packs de dulcecitos,45.00,true,6,6,gluten|huevo|lacteos
+caja-de-dulcecitos-para-mama-x-24,Caja de dulcecitos para mama x 24,caja de dulcecitos para mama x 24|caja de dulcecitos para mama x 24 dia de la madre,Packs de dulcecitos,69.00,true,24,24,gluten|huevo|lacteos
+caja-de-dulcecitos-x24,Caja de dulcecitos x24,caja de dulcecitos x24,Packs de dulcecitos,55.00,true,24,24,gluten|huevo|lacteos
+caja-de-dulcecitos-x24-trufas-y-canelitas,Caja de dulcecitos x24 trufas y canelitas,caja de dulcecitos x24 trufas y canelitas,Packs de dulcecitos,55.00,true,24,24,gluten|huevo|lacteos
+caja-de-dulcecitos-x26,Caja de dulcecitos x26,caja de dulcecitos x26,Packs de dulcecitos,55.00,true,26,26,gluten|huevo|lacteos
+caja-de-galleta-x12-dulce-pascua,Caja de galleta x12 dulce pascua,caja de galleta x12 dulce pascua|caja de galleta x12 dulce pascua pascua,Packs de dulcecitos,49.00,true,12,12,gluten|huevo|lacteos
+caja-de-galletas-mixtas-x6-und,Caja de galletas mixtas x6 und,caja de galletas mixtas x6 und,Packs de dulcecitos,45.00,true,6,6,gluten|huevo|lacteos
+caja-de-mini-alfajorcito-x20-und,Caja de mini alfajorcito x20 und,caja de mini alfajorcito x20 und,Packs de dulcecitos,45.00,true,20,20,gluten|huevo|lacteos
+caja-de-mini-alfajorcitos-x50,Caja de mini alfajorcitos x50,caja de mini alfajorcitos x50,Packs de dulcecitos,78.00,true,50,50,gluten|huevo|lacteos
+caja-de-mini-brownies-y-blondies-x12-und,Caja de mini brownies y blondies x12 und,caja de mini brownies y blondies x12 und,Packs de dulcecitos,35.00,true,12,12,gluten|huevo|lacteos
+caja-de-mini-galletas-x9-und,Caja de mini galletas x9 und,caja de mini galletas x9 und,Packs de dulcecitos,35.00,true,9,9,gluten|huevo|lacteos
+caja-de-trufas-y-canelitas-x12-und,Caja de trufas y canelitas x12 und,caja de trufas y canelitas x12 und,Packs de dulcecitos,39.00,true,12,12,gluten|huevo|lacteos
+caja-mixta-50-bocaditos,Caja mixta 50 bocaditos,caja mixta 50 bocaditos,Packs de dulcecitos,89.00,true,,,gluten|huevo|lacteos
+caja-mixta-brownies-blondies-x6,Caja mixta brownies & blondies x6,caja mixta brownies & blondies x6,Packs de dulcecitos,45.00,true,6,6,gluten|huevo|lacteos
+canelita,Canelita,canelita,Dulcecitos,3.00,true,1,1,gluten|huevo|lacteos
+cheesecake-canela-indv,Cheesecake canela individual,cheesecake canela indv|cheesecake canela individual,Individuales,17.00,true,1,1,gluten|huevo|lacteos
+cheesecake-new-york-frutos-rojos-grande,Cheesecake new york frutos rojos grande,cheesecake new york frutos rojos grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+cheesecake-ny-de-frutos-rojos-grande,Cheesecake ny de frutos rojos grande,cheesecake ny de frutos rojos grande|cheesecake ny de frutos rojos grande dia de la madre,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+cheesecake-oreo,Cheesecake oreo individual,cheesecake oreo indv|cheesecake oreo individual|cheesecake oreo|cheesecake de oreo,Individuales,17.00,true,1,1,gluten|huevo|lacteos
+cheesecake-toblerone-grande,Cheesecake toblerone grande,cheesecake toblerone grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+cookieturron-bola-de-helado,Cookieturron bola de helado,cookieturron bola de helado|cookieturron bola de helado cookieturron,Individuales,19.00,true,1,1,gluten|huevo|lacteos
+cookieturron-entero,Cookieturron entero,cookieturron entero|cookieturron entero cookieturron,Tortas,145.00,true,12,16,gluten|huevo|lacteos
+corazon-de-frambuesa-mini,Corazon de frambuesa mini,corazon de frambuesa mini|corazon de frambuesa mini dia de la madre,Mini tortas,59.00,true,4,6,gluten|huevo|lacteos
+corazon-de-frambuesa-para-mama-mediano,Corazon de frambuesa para mama mediano,corazon de frambuesa para mama mediano|corazon de frambuesa para mama mediano dia de la madre,Tortas,129.00,true,8,10,gluten|huevo|lacteos
+crema-volteada-especial-grande,Crema volteada especial grande,crema volteada especial grande|crema volteada especial grande dia de la madre,Tortas,99.00,true,12,16,huevo|lacteos
+crema-volteada-grande,Crema volteada grande,crema volteada grande,Tortas,90.00,true,12,16,huevo|lacteos
+crema-volteada-indiv,Crema volteada indiv,crema volteada indiv,Individuales,15.00,true,1,1,huevo|lacteos
+crocante-de-chirimoya-grande,Crocante de chirimoya grande,crocante de chirimoya grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+crocante-de-chirimoya-indiv,Crocante de chirimoya indiv,crocante de chirimoya indiv,Individuales,15.90,true,1,1,gluten|huevo|lacteos
+crocante-de-chirimoya-mediano,Crocante de chirimoya mediano,crocante de chirimoya mediano,Tortas,69.00,true,8,10,gluten|huevo|lacteos
+crocante-de-frutos-rojos-grande,Crocante de frutos rojos grande,crocante de frutos rojos grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+crocante-de-frutos-rojos-indiv,Crocante de frutos rojos indiv,crocante de frutos rojos indiv,Individuales,15.90,true,1,1,gluten|huevo|lacteos
+crocante-de-frutos-rojos-mediano,Crocante de frutos rojos mediano,crocante de frutos rojos mediano,Tortas,79.00,true,8,10,gluten|huevo|lacteos
+crocante-de-lucuma-grande,Crocante de lucuma grande,crocante de lucuma grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+crocante-de-lucuma-mediano,Crocante de lucuma mediano,crocante de lucuma mediano,Tortas,69.00,true,8,10,gluten|huevo|lacteos
+crocante-de-manzana-grande,Crocante de manzana grande,crocante de manzana grande,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+crocante-de-manzana-indiv,Crocante de manzana indiv,crocante de manzana indiv,Individuales,16.00,true,1,1,gluten|huevo|lacteos
+crocante-de-maracumango-grande,Crocante de maracumango grande,crocante de maracumango grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos
+crocante-de-maracumango-indv,Crocante de maracumango individual,crocante de maracumango indv|crocante de maracumango individual,Individuales,15.90,true,1,1,gluten|huevo|lacteos
+crocante-de-maracumango-mediano,Crocante de maracumango mediano,crocante de maracumango mediano,Tortas,69.00,true,8,10,gluten|huevo|lacteos
+crocante-de-pistacho-y-frambuesa-grande,Crocante de pistacho y frambuesa grande,crocante de pistacho y frambuesa grande,Tortas,79.00,true,12,16,gluten|huevo|lacteos
+cupcake-chocolate,Cupcake chocolate,cupcake chocolate,Individuales,5.00,true,1,1,gluten|huevo|lacteos
+cupcake-de-zanahoria,Cupcake de zanahoria,cupcake de zanahoria,Individuales,5.00,true,1,1,gluten|huevo|lacteos
+empanada-de-lomo,Empanada de lomo,empanada de lomo,Salados,11.00,true,6,8,gluten|lacteos
+empanada-de-pollo,Empanada de pollo,empanada de pollo,Salados,11.00,true,6,8,gluten|lacteos
+empanada-mixta,Empanada mixta,empanada mixta,Salados,11.00,true,6,8,gluten|lacteos
+galleta-chocochip,Galleta chocochip,galleta chocochip,Dulcecitos,8.00,true,1,1,gluten|huevo|lacteos
+galleta-con-crema-de-avellanas,Galleta con crema de avellanas,galleta con crema de avellanas,Dulcecitos,9.00,true,1,1,gluten|huevo|lacteos|frutos secos
+galleta-de-conejo,Galleta de conejo,galleta de conejo|galleta de conejo pascua,Dulcecitos,5.00,true,1,1,gluten|huevo|lacteos
+galleta-de-huevito,Galleta de huevito,galleta de huevito|galleta de huevito pascua,Dulcecitos,5.00,true,1,1,gluten|huevo|lacteos
+galleta-de-toffee-con-chocolate-blanco,Galleta de toffee con chocolate blanco,galleta de toffee con chocolate blanco,Dulcecitos,9.00,true,1,1,gluten|huevo|lacteos
+galleta-de-zanahoria,Galleta de zanahoria,galleta de zanahoria|galleta de zanahoria pascua,Dulcecitos,5.00,true,1,1,gluten|huevo|lacteos
+galletitas-x5-und,Galletitas x5 und,galletitas x5 und,Packs de dulcecitos,10.00,true,5,5,gluten|huevo|lacteos
+huevito-aniversario,Huevito aniversario,huevito aniversario|huevito aniversario pascua,Dulcecitos,12.50,true,1,1,gluten|huevo|lacteos
+huevito-chocotorta,Huevito chocotorta,huevito chocotorta|huevito chocotorta pascua,Dulcecitos,12.50,true,1,1,gluten|huevo|lacteos
+huevito-de-alfajor,Huevito de alfajor,huevito de alfajor|huevito de alfajor pascua,Dulcecitos,12.50,true,1,1,gluten|huevo|lacteos
+huevito-de-chocoavellana,Huevito de chocoavellana,huevito de chocoavellana|huevito de chocoavellana pascua,Dulcecitos,12.50,true,1,1,gluten|huevo|lacteos|frutos secos
+huevito-dubai-de-pistacho,Huevito dubai de pistacho,huevito dubai de pistacho|huevito dubai de pistacho pascua,Dulcecitos,12.50,true,1,1,gluten|huevo|lacteos|frutos secos
+huevito-turron-de-chocolate,Huevito turron de chocolate,huevito turron de chocolate|huevito turron de chocolate pascua,Dulcecitos,12.50,true,1,1,gluten|huevo|lacteos
+jar-brownies-blondies-patty-pote-x-200g,Jar brownies & blondies patty pote x 200g,jar brownies & blondies patty pote x 200g,Packs de dulcecitos,25.00,true,,,gluten|huevo|lacteos
+jar-galletas-choco-chips-y-toffee-patty-200g,Jar galletas choco chips y toffee patty 200g,jar galletas choco chips y toffee patty 200g,Packs de dulcecitos,25.00,true,,,gluten|huevo|lacteos
+jar-mediano-de-galletas-mixtas-200-gr,Jar mediano de galletas mixtas 200 gr,jar mediano de galletas mixtas 200 gr,Packs de dulcecitos,25.00,true,8,10,gluten|huevo|lacteos
+jardin-de-la-abuela,Jardin de la abuela,jardin de la abuela|jardin de la abuela dia de la madre,Kekes,65.00,true,6,8,gluten|huevo|lacteos
+jardin-de-la-abuela-mini,Jardin de la abuela mini,jardin de la abuela mini|jardin de la abuela mini dia de la madre,Kekes,35.00,true,6,8,gluten|huevo|lacteos
+jardin-magico-de-pera-grande,Jardin magico de pera grande,jardin magico de pera grande|jardin magico de pera grande dia de la madre,Tortas,115.00,true,12,16,gluten|huevo|lacteos
+jardin-magico-de-pera-mediano,Jardin magico de pera mediano,jardin magico de pera mediano|jardin magico de pera mediano dia de la madre,Tortas,105.00,true,8,10,gluten|huevo|lacteos
+keke-de-la-abuela-entero,Keke de la abuela entero,keke de la abuela entero,Kekes,59.00,true,6,8,gluten|huevo|lacteos
+keke-de-la-abuela-indiv,Keke de la abuela indiv,keke de la abuela indiv,Individuales,9.00,true,1,1,gluten|huevo|lacteos
+mini-alfajorcito,Mini alfajorcito,mini alfajorcito,Dulcecitos,3.00,true,1,1,gluten|huevo|lacteos
+mini-bosque-de-chocolate,Mini bosque de chocolate,mini bosque de chocolate|mini bosque de chocolate dia de la madre,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-bosque-de-lucuma,Mini bosque de lucuma,mini bosque de lucuma|mini bosque de lucuma dia de la madre,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-bosque-de-zanahoria,Mini bosque de zanahoria,mini bosque de zanahoria|mini bosque de zanahoria dia de la madre,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-galleta-de-toffee,Mini galleta de toffee,mini galleta de toffee,Dulcecitos,3.50,true,1,1,gluten|huevo|lacteos
+mini-galletas-para-mama-x9,Mini galletas para mama x9,mini galletas para mama x9|mini galletas para mama x9 dia de la madre,Packs de dulcecitos,39.00,true,9,9,gluten|huevo|lacteos
+mini-keke-de-la-abuela-mama,Mini keke de la abuela - mama,mini keke de la abuela - mama|mini keke de la abuela - mama dia de la madre,Kekes,39.00,true,6,8,gluten|huevo|lacteos
+mini-torta-de-chocolucuma,Mini torta  de chocolucuma,mini torta  de chocolucuma,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-torta-de-chocolate,Mini torta de chocolate,mini torta de chocolate,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-torta-de-pascua,Mini torta de pascua,mini torta de pascua|mini torta de pascua pascua,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-torta-de-zanahoria,Mini torta de zanahoria,mini torta de zanahoria,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-torta-especial,Mini torta especial,mini torta especial,Mini tortas,65.00,true,4,6,gluten|huevo|lacteos
+mini-torta-red-velvet,Mini torta red velvet,mini torta red velvet,Mini tortas,52.00,true,4,6,gluten|huevo|lacteos
+mini-trufas-para-mama-x12,Mini trufas para mama x12,mini trufas para mama x12|mini trufas para mama x12 dia de la madre,Packs de dulcecitos,39.00,true,12,12,gluten|huevo|lacteos
+molde-de-turron-de-camote-y-pina-mediano,Molde de turron de camote y pina mediano,molde de turron de camote y pina mediano|molde de turron de camote y pina mediano octubre,Tortas,35.00,true,8,10,gluten|huevo|lacteos
+mousse-de-chocolucuma-grande,Mousse de chocolucuma grande,mousse de chocolucuma grande,Tortas,129.00,true,12,16,huevo|lacteos
+mousse-de-chocolucuma-indv,Mousse de chocolucuma individual,mousse de chocolucuma indv|mousse de chocolucuma individual,Individuales,16.00,true,1,1,huevo|lacteos
+pack-x6-encuentrame-si-puedes,Pack x6 encuentrame si puedes,pack x6 encuentrame si puedes|pack x6 encuentrame si puedes pascua,Packs de dulcecitos,69.00,true,6,6,gluten|huevo|lacteos
+pack-x8-encuentrame-si-puedes,Pack x8 encuentrame si puedes,pack x8 encuentrame si puedes|pack x8 encuentrame si puedes pascua,Packs de dulcecitos,89.00,true,8,8,gluten|huevo|lacteos
+pie-de-limon-grande,Pie de limon grande,pie de limon grande,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+pie-de-limon-indiv,Pie de limon indiv,pie de limon indiv,Individuales,16.00,true,1,1,gluten|huevo|lacteos
+pie-de-limon-para-papa-grande,Pie de limon para papa grande,pie de limon para papa grande|pie de limon para papa grande dia del padre,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+pie-de-manzana-grande,Pie de manzana grande,pie de manzana grande,Tortas,90.00,true,12,16,gluten|huevo|lacteos
+pie-de-manzana-indiv,Pie de manzana indiv,pie de manzana indiv,Individuales,16.00,true,1,1,gluten|huevo|lacteos
+pie-de-manzana-para-mama-grande,Pie de manzana para mama grande,pie de manzana para mama grande|pie de manzana para mama grande dia de la madre,Tortas,89.00,true,12,16,gluten|huevo|lacteos
+pie-de-pecanas-grande,Pie de pecanas grande,pie de pecanas grande,Tortas,105.00,true,12,16,gluten|huevo|lacteos|frutos secos
+pionono-de-chirimoya-grande,Pionono de chirimoya grande,pionono de chirimoya grande|pionono de chirimoya grande dia de la madre,Tortas,99.00,true,12,16,gluten|huevo|lacteos
+quiche-capresse-entero,Quiche capresse entero,quiche capresse entero,Salados,80.00,true,6,8,gluten|lacteos
+quiche-capresse-indiv,Quiche capresse indiv,quiche capresse indiv,Individuales,14.00,true,1,1,gluten|huevo|lacteos
+quiche-cebolla-y-queso-entero,Quiche cebolla y queso entero,quiche cebolla y queso entero,Salados,80.00,true,6,8,gluten|lacteos
+quiche-cebolla-y-queso-indiv,Quiche cebolla y queso indiv,quiche cebolla y queso indiv,Individuales,14.00,true,1,1,gluten|huevo|lacteos
+quiche-poro-y-tocino-entero,Quiche poro y tocino entero,quiche poro y tocino entero,Salados,80.00,true,6,8,gluten|lacteos
+quiche-poro-y-tocino-indiv,Quiche poro y tocino indiv,quiche poro y tocino indiv,Individuales,14.00,true,1,1,gluten|huevo|lacteos
+sandwich-capresse,Sandwich capresse,sandwich capresse,Salados,16.00,true,1,1,gluten|lacteos
+sandwich-de-pollo,Sandwich de pollo,sandwich de pollo,Salados,18.00,true,1,1,gluten|lacteos
+sandwich-mixto,Sandwich mixto,sandwich mixto,Salados,16.00,true,1,1,gluten|lacteos
+souffle-de-fresas-grande,Souffle de fresas grande,souffle de fresas grande,Tortas,99.00,true,12,16,gluten|huevo|lacteos
+souffle-de-mango-grande,Souffle de mango grande,souffle de mango grande,Tortas,99.00,true,12,16,gluten|huevo|lacteos
+torta-aniversario-grande,Torta aniversario grande,torta aniversario grande|torta aniversario grande aniversario,Tortas,159.00,true,12,16,gluten|huevo|lacteos
+torta-brownie-dubai-de-crema-de-avellanas-xl,Torta brownie dubai de crema de avellanas xl,torta brownie dubai de crema de avellanas xl,Tortas,159.00,true,20,25,gluten|huevo|lacteos|frutos secos
+torta-de-alfajor-dubai-xl,Torta de alfajor dubai xl,torta de alfajor dubai xl,Tortas,149.00,true,20,25,gluten|huevo|lacteos
+torta-de-chocolate-clasica-celebra-con-patty-grande,Torta de chocolate clasica celebra con patty grande,torta de chocolate clasica celebra con patty grande|torta de chocolate clasica celebra con patty grande celebra,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolate-clasica-celebra-con-patty-mediana,Torta de chocolate clasica celebra con patty mediana,torta de chocolate clasica celebra con patty mediana|torta de chocolate clasica celebra con patty mediana celebra,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-de-chocolate-clasica-grande,Torta de chocolate clasica grande,torta de chocolate clasica grande,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolate-con-crema-de-avellanas-grande,Torta de chocolate con crema de avellanas grande,torta de chocolate con crema de avellanas grande,Tortas,120.00,true,12,16,gluten|huevo|lacteos|frutos secos
+torta-de-chocolate-con-manjar-celebra-con-patty-grande,Torta de chocolate con manjar celebra con patty grande,torta de chocolate con manjar celebra con patty grande|torta de chocolate con manjar celebra con patty grande celebra,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolate-con-manjar-celebra-grande,Torta de chocolate con manjar celebra grande,torta de chocolate con manjar celebra grande|torta de chocolate con manjar celebra grande celebra,Tortas,82.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolate-con-manjar-celebra-mediana,Torta de chocolate con manjar celebra mediana,torta de chocolate con manjar celebra mediana|torta de chocolate con manjar celebra mediana celebra,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-de-chocolate-con-manjar-grande,Torta de chocolate con manjar grande,torta de chocolate con manjar grande,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolate-grande-para-papa,Torta de chocolate grande para papa,torta de chocolate grande para papa|torta de chocolate grande para papa dia del padre,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolate-mediana-para-papa,Torta de chocolate mediana para papa,torta de chocolate mediana para papa|torta de chocolate mediana para papa dia del padre,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-de-chocolucuma-grande,Torta de chocolucuma grande,torta de chocolucuma grande,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+torta-de-chocolucuma-mediana,Torta de chocolucuma mediana,torta de chocolucuma mediana,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-de-chocopistacho-grande,Torta de chocopistacho grande,torta de chocopistacho grande,Tortas,149.00,true,12,16,gluten|huevo|lacteos|frutos secos
+torta-de-chocopistacho-mediana,Torta de chocopistacho mediana,torta de chocopistacho mediana,Tortas,120.00,true,8,10,gluten|huevo|lacteos|frutos secos
+torta-de-pera-grande,Torta de pera grande,torta de pera grande,Tortas,115.00,true,12,16,gluten|huevo|lacteos
+torta-de-pera-mediana,Torta de pera mediana,torta de pera mediana,Tortas,90.00,true,8,10,gluten|huevo|lacteos
+torta-de-zanahoria-celebra-grande,Torta de zanahoria celebra grande,torta de zanahoria celebra grande|torta de zanahoria celebra grande celebra,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+torta-de-zanahoria-celebra-mediana,Torta de zanahoria celebra mediana,torta de zanahoria celebra mediana|torta de zanahoria celebra mediana celebra,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-de-zanahoria-grande,Torta de zanahoria grande,torta de zanahoria grande,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+torta-de-zanahoria-mediana-para-papa,Torta de zanahoria mediana para papa,torta de zanahoria mediana para papa|torta de zanahoria mediana para papa dia del padre,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-de-zanahoria-para-papa-grande,Torta de zanahoria para papa grande,torta de zanahoria para papa grande|torta de zanahoria para papa grande dia del padre,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+cake-red-velvet-grande,Torta red velvet grande,torta red velvet grande|red velvet|red velvet grande,Tortas,105.00,true,12,16,gluten|huevo|lacteos
+cake-red-velvet-mediana,Torta red velvet mediana,torta red velvet mediana|red velvet|red velvet mediana,Tortas,82.00,true,8,10,gluten|huevo|lacteos
+torta-tres-leches-clasica-grande,Torta tres leches clasica grande,torta tres leches clasica grande,Tortas,95.00,true,12,16,gluten|huevo|lacteos
+torta-tres-leches-de-fresa-grande,Torta tres leches de fresa grande,torta tres leches de fresa grande,Tortas,99.00,true,12,16,gluten|huevo|lacteos
+torta-tres-leches-de-lucuma-grande,Torta tres leches de lucuma grande,torta tres leches de lucuma grande,Tortas,99.00,true,12,16,gluten|huevo|lacteos
+torta-tres-leches-de-pistacho-grande,Torta tres leches de pistacho grande,torta tres leches de pistacho grande,Tortas,129.00,true,12,16,gluten|huevo|lacteos|frutos secos
+torta-tres-leches-indiv,Torta tres leches indiv,torta tres leches indiv,Individuales,16.00,true,1,1,gluten|huevo|lacteos
+torta-trufada-grande,Torta trufada grande,torta trufada grande,Tortas,120.00,true,12,16,gluten|huevo|lacteos
+triple-de-pollo,Triple de pollo,triple de pollo,Salados,11.00,true,1,1,gluten|lacteos
+trufa-de-chocolate,Trufa de chocolate,trufa de chocolate,Dulcecitos,3.00,true,1,1,gluten|huevo|lacteos
+trufa-de-pistacho,Trufa de pistacho,trufa de pistacho,Dulcecitos,4.00,true,1,1,gluten|huevo|lacteos|frutos secos
+turron-de-camote-y-pina-indiv,Turron de camote y pina indiv,turron de camote y pina indiv|turron de camote y pina indiv octubre,Tortas,13.00,true,12,16,gluten|huevo|lacteos
+turron-de-chocolate-chico,Turron de chocolate chico,turron de chocolate chico,Tortas,55.00,true,12,16,gluten|huevo|lacteos
+turron-de-chocolate-chico-para-mama,Turron de chocolate chico para mama,turron de chocolate chico para mama|turron de chocolate chico para mama dia de la madre,Tortas,55.00,true,12,16,gluten|huevo|lacteos
+turron-de-chocolate-chico-para-papa,Turron de chocolate chico para papa,turron de chocolate chico para papa|turron de chocolate chico para papa dia del padre,Tortas,55.00,true,12,16,gluten|huevo|lacteos
+turron-de-chocolate-grande,Turron de chocolate grande,turron de chocolate grande,Tortas,75.00,true,12,16,gluten|huevo|lacteos
+turron-de-chocolate-grande-para-mama,Turron de chocolate grande para mama,turron de chocolate grande para mama|turron de chocolate grande para mama dia de la madre,Tortas,75.00,true,12,16,gluten|huevo|lacteos
+turron-de-chocolate-indiv,Turron de chocolate indiv,turron de chocolate indiv,Individuales,14.00,true,1,1,gluten|huevo|lacteos
+turron-de-chocolate-para-papa-grande,Turron de chocolate para papa grande,turron de chocolate para papa grande|turron de chocolate para papa grande dia del padre,Tortas,75.00,true,12,16,gluten|huevo|lacteos
+turron-de-dona-pepa-grande,Turron de dona pepa grande,turron de dona pepa grande|turron de dona pepa grande octubre,Tortas,69.00,true,12,16,gluten|huevo|lacteos
+turron-de-dona-pepa-indiv,Turron de dona pepa indiv,turron de dona pepa indiv|turron de dona pepa indiv octubre,Tortas,12.00,true,12,16,gluten|huevo|lacteos
+turron-de-dona-pepa-mediano,Turron de dona pepa mediano,turron de dona pepa mediano|turron de dona pepa mediano octubre,Tortas,35.00,true,8,10,gluten|huevo|lacteos
