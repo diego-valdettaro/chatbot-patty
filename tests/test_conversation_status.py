@@ -6,7 +6,15 @@ from pathlib import Path
 import pytest
 
 from patty_bot.domain.catalog import load_catalog
-from patty_bot.application.conversation_state import ConversationState, ConversationStatus, transition_status
+from patty_bot.application.conversation_state import (
+    ConversationState,
+    ConversationStatus,
+    ConversationTransitionError,
+    HandoffReason,
+    allows_automatic_response,
+    transition_status,
+    transition_to_human_handoff,
+)
 from patty_bot.application.conversation_service import ConversationService
 from patty_bot.domain.orders import OrderDetails
 
@@ -36,7 +44,6 @@ def service(repository: InMemoryConversationRepository) -> ConversationService:
         (ConversationStatus.ACTIVE, ConversationStatus.AWAITING_CONFIRMATION),
         (ConversationStatus.AWAITING_CONFIRMATION, ConversationStatus.CONFIRMED),
         (ConversationStatus.AWAITING_CONFIRMATION, ConversationStatus.ACTIVE),
-        (ConversationStatus.ACTIVE, ConversationStatus.HUMAN_HANDOFF),
         (ConversationStatus.ACTIVE, ConversationStatus.CANCELLED),
     ),
 )
@@ -54,8 +61,34 @@ def test_operational_status_allows_expected_transitions(current, target) -> None
     ),
 )
 def test_operational_status_rejects_invalid_transitions(current, target) -> None:
-    with pytest.raises(ValueError, match="Invalid conversation status transition"):
+    with pytest.raises(ConversationTransitionError, match="Invalid conversation status transition"):
         transition_status(current, target)
+
+
+@pytest.mark.parametrize("reason", tuple(HandoffReason))
+def test_handoff_requires_one_of_the_explicit_operational_reasons(reason) -> None:
+    assert transition_to_human_handoff(ConversationStatus.ACTIVE, reason) is ConversationStatus.HUMAN_HANDOFF
+
+
+def test_handoff_cannot_be_started_without_a_structured_reason() -> None:
+    with pytest.raises(TypeError, match="valid HandoffReason"):
+        transition_to_human_handoff(ConversationStatus.ACTIVE, "customer_request")  # type: ignore[arg-type]
+
+
+def test_generic_transition_cannot_bypass_the_handoff_reason() -> None:
+    with pytest.raises(ConversationTransitionError, match="requires an explicit HandoffReason"):
+        transition_status(ConversationStatus.ACTIVE, ConversationStatus.HUMAN_HANDOFF)
+
+
+def test_handoff_is_terminal_for_automatic_responses_and_lifecycle_transitions() -> None:
+    handoff = transition_to_human_handoff(
+        ConversationStatus.ACTIVE,
+        HandoffReason.CUSTOMER_REQUEST,
+    )
+
+    assert not allows_automatic_response(handoff)
+    with pytest.raises(ConversationTransitionError, match="Invalid conversation status transition"):
+        transition_status(handoff, ConversationStatus.ACTIVE)
 
 
 def test_confirmed_status_blocks_order_modifications() -> None:
@@ -72,7 +105,7 @@ def test_human_handoff_records_the_customer_message_without_running_the_agent(mo
     repository = InMemoryConversationRepository()
     conversation_service = service(repository)
     conversation_id = "conversation-1"
-    conversation_service.transition_conversation(conversation_id, ConversationStatus.HUMAN_HANDOFF)
+    repository.save(ConversationState(conversation_id=conversation_id, status=ConversationStatus.HUMAN_HANDOFF))
     monkeypatch.setattr(
         "patty_bot.application.conversation_service.run_agent_turn",
         lambda *_args: pytest.fail("The automatic agent must not run during human handoff."),

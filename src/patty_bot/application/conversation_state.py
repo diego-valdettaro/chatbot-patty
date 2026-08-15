@@ -17,6 +17,24 @@ class ConversationStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
+class HandoffReason(str, Enum):
+    """Closed set of reasons for stopping automatic customer service.
+
+    The value is intentionally operational rather than user-facing text so it
+    can later be persisted and consumed by an operator-facing adapter.
+    """
+
+    CUSTOMER_REQUEST = "customer_request"
+    REPEATED_UNRESOLVED_INPUT = "repeated_unresolved_input"
+    UNRESOLVED_AMBIGUITY = "unresolved_ambiguity"
+    OUTSIDE_SUPPORTED_SCOPE = "outside_supported_scope"
+    PROCESSING_ERROR = "processing_error"
+
+
+class ConversationTransitionError(ValueError):
+    """Raised when a requested conversation lifecycle change is not allowed."""
+
+
 _ALLOWED_TRANSITIONS: dict[ConversationStatus, frozenset[ConversationStatus]] = {
     ConversationStatus.ACTIVE: frozenset(
         {
@@ -62,10 +80,32 @@ class ConversationState:
 def transition_status(current: ConversationStatus, target: ConversationStatus) -> ConversationStatus:
     """Validate a small operational transition without constraining natural-language turns."""
 
+    if target is ConversationStatus.HUMAN_HANDOFF:
+        raise ConversationTransitionError(
+            "A human handoff requires an explicit HandoffReason; use transition_to_human_handoff."
+        )
+    return _transition_status(current, target)
+
+
+def transition_to_human_handoff(current: ConversationStatus, reason: HandoffReason) -> ConversationStatus:
+    """Move a conversation into human ownership with one structured reason.
+
+    ``reason`` is an enum on purpose: callers cannot persist arbitrary prose as
+    an operational cause, and later persistence can store this value directly.
+    """
+
+    if not isinstance(reason, HandoffReason):
+        raise TypeError("A human handoff requires a valid HandoffReason.")
+    return _transition_status(current, ConversationStatus.HUMAN_HANDOFF)
+
+
+def _transition_status(current: ConversationStatus, target: ConversationStatus) -> ConversationStatus:
+    """Apply a lifecycle transition after any target-specific preconditions."""
+
     if target == current:
         return current
     if target not in _ALLOWED_TRANSITIONS[current]:
-        raise ValueError(f"Invalid conversation status transition: {current.value} -> {target.value}.")
+        raise ConversationTransitionError(f"Invalid conversation status transition: {current.value} -> {target.value}.")
     return target
 
 
