@@ -3,10 +3,18 @@
 import logging
 from pathlib import Path
 
+import pytest
+
 from patty_bot.agent.router import AgentTurn
 from patty_bot.domain.catalog import load_catalog
-from patty_bot.application.conversation_state import ConversationState
-from patty_bot.infrastructure.conversation_repository import ConversationRepository
+from patty_bot.application.conversation_state import (
+    ConversationMessage,
+    ConversationState,
+    ConversationStatus,
+    ConversationTransitionError,
+    HandoffReason,
+)
+from patty_bot.infrastructure.conversation_repository import ConversationRepository, SQLiteConversationRepository
 from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings
 from patty_bot.application.conversation_service import ConversationService
 
@@ -97,6 +105,76 @@ def test_new_conversation_leaves_the_requested_date_unset_until_the_customer_pro
     state = service(repository).load_conversation("conversation-1")
 
     assert state.order_details.requested_date is None
+
+
+def test_initiate_human_handoff_persists_reason_and_conversation_context() -> None:
+    repository = InMemoryConversationRepository()
+    conversation_service = service(repository)
+    repository.save(
+        ConversationState(
+            conversation_id="conversation-1",
+            messages=(ConversationMessage(role="user", content="Quiero una tarta."),),
+        )
+    )
+
+    handoff = conversation_service.initiate_human_handoff(
+        "conversation-1",
+        HandoffReason.UNRESOLVED_AMBIGUITY,
+        user_message="No se cual sabor elegir.",
+    )
+
+    assert handoff.status is ConversationStatus.HUMAN_HANDOFF
+    assert handoff.handoff_reason is HandoffReason.UNRESOLVED_AMBIGUITY
+    assert [message.content for message in handoff.messages] == [
+        "Quiero una tarta.",
+        "No se cual sabor elegir.",
+    ]
+    assert repository.states["conversation-1"] == handoff
+
+
+def test_initiate_human_handoff_uses_the_domain_transition_rules() -> None:
+    repository = InMemoryConversationRepository()
+    conversation_service = service(repository)
+    repository.save(ConversationState(conversation_id="conversation-1", status=ConversationStatus.CONFIRMED))
+
+    with pytest.raises(ConversationTransitionError, match="Invalid conversation status transition"):
+        conversation_service.initiate_human_handoff("conversation-1", HandoffReason.CUSTOMER_REQUEST)
+
+
+def test_handoff_survives_sqlite_recovery_and_blocks_automatic_responses(tmp_path, monkeypatch) -> None:
+    database_path = tmp_path / "conversations.sqlite3"
+    initial_service = ConversationService(
+        load_catalog(Path("data/catalog.sample.csv")),
+        database_path,
+        SQLiteConversationRepository(database_path),
+    )
+    initial_service.load_conversation("conversation-1")
+    initial_service.initiate_human_handoff(
+        "conversation-1",
+        HandoffReason.CUSTOMER_REQUEST,
+        user_message="Prefiero hablar con una persona.",
+    )
+    recovered_service = ConversationService(
+        load_catalog(Path("data/catalog.sample.csv")),
+        database_path,
+        SQLiteConversationRepository(database_path),
+    )
+    monkeypatch.setattr(
+        "patty_bot.application.conversation_service.run_agent_turn",
+        lambda *_args: pytest.fail("The automatic agent must not run after a persisted human handoff."),
+    )
+
+    recovered_state = recovered_service.load_conversation("conversation-1")
+    turn = recovered_service.handle_message("conversation-1", "Sigo necesitando ayuda.")
+
+    assert recovered_state.status is ConversationStatus.HUMAN_HANDOFF
+    assert recovered_state.handoff_reason is HandoffReason.CUSTOMER_REQUEST
+    assert turn.reply == ""
+    persisted_state = recovered_service.load_conversation("conversation-1")
+    assert [message.content for message in persisted_state.messages] == [
+        "Prefiero hablar con una persona.",
+        "Sigo necesitando ayuda.",
+    ]
 
 
 def test_unexpected_provider_errors_are_logged_and_translated_to_the_safe_reply(monkeypatch, caplog) -> None:
