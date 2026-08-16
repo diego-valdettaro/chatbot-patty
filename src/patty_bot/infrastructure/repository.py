@@ -1,11 +1,46 @@
 import sqlite3
-from dataclasses import replace
-from datetime import date
+from dataclasses import dataclass, replace
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 
 from patty_bot.domain.cart import Cart
 from patty_bot.domain.orders import ORDER_STATUS_PENDING, Order, OrderDetails, create_confirmed_order
+from patty_bot.application.conversation_state import HandoffReason
+
+
+@dataclass(frozen=True)
+class StoredOrderItem:
+    """Immutable item snapshot intended for administrative read models."""
+
+    product_id: str
+    product_name: str
+    unit_price: Decimal
+    quantity: int
+    line_subtotal: Decimal
+
+
+@dataclass(frozen=True)
+class StoredOrder:
+    """Confirmed order and its catalog snapshot, reconstructed from SQLite."""
+
+    id: int
+    details: OrderDetails
+    subtotal: Decimal
+    delivery_fee: Decimal
+    total: Decimal
+    status: str
+    created_at: datetime
+    items: tuple[StoredOrderItem, ...]
+
+
+@dataclass(frozen=True)
+class HandoffCase:
+    """Minimal structured record a future operator dashboard can list safely."""
+
+    conversation_id: str
+    reason: HandoffReason
+    created_at: datetime
 
 
 def initialize_database(path: str | Path) -> None:
@@ -125,6 +160,93 @@ def save_order(path: str | Path, order: Order) -> Order:
 
     # SQLite assigns the identity after insertion; the returned aggregate is the persisted order.
     return replace(order, id=order_id)
+
+
+def list_orders(path: str | Path) -> tuple[StoredOrder, ...]:
+    """Read confirmed order snapshots without coupling a future dashboard to SQL."""
+
+    initialize_database(path)
+    with sqlite3.connect(path) as connection:
+        order_rows = connection.execute(
+            """
+            SELECT id, customer_name, customer_phone, fulfillment_type, requested_date,
+                   delivery_address, pickup_store, subtotal, delivery_fee, total, status, created_at
+            FROM orders
+            ORDER BY id DESC
+            """
+        ).fetchall()
+        item_rows = connection.execute(
+            """
+            SELECT order_id, product_id, product_name, unit_price, quantity, line_subtotal
+            FROM order_items
+            ORDER BY id
+            """
+        ).fetchall()
+
+    items_by_order: dict[int, list[StoredOrderItem]] = {}
+    for order_id, product_id, product_name, unit_price, quantity, line_subtotal in item_rows:
+        items_by_order.setdefault(order_id, []).append(
+            StoredOrderItem(product_id, product_name, Decimal(unit_price), quantity, Decimal(line_subtotal))
+        )
+    return tuple(
+        StoredOrder(
+            id=order_id,
+            details=OrderDetails(
+                customer_name=customer_name,
+                customer_phone=customer_phone,
+                fulfillment_type=fulfillment_type,
+                requested_date=date.fromisoformat(requested_date),
+                delivery_address=delivery_address or "",
+                pickup_store=pickup_store or "",
+            ),
+            subtotal=Decimal(subtotal),
+            delivery_fee=Decimal(delivery_fee),
+            total=Decimal(total),
+            status=status,
+            created_at=datetime.fromisoformat(created_at),
+            items=tuple(items_by_order.get(order_id, [])),
+        )
+        for (
+            order_id,
+            customer_name,
+            customer_phone,
+            fulfillment_type,
+            requested_date,
+            delivery_address,
+            pickup_store,
+            subtotal,
+            delivery_fee,
+            total,
+            status,
+            created_at,
+        ) in order_rows
+    )
+
+
+def list_handoff_cases(path: str | Path) -> tuple[HandoffCase, ...]:
+    """List human-owned conversations and their structured operational reason."""
+
+    from patty_bot.infrastructure.conversation_repository import SQLiteConversationRepository
+
+    # Keep this public reader safe for a brand-new database and for legacy schemas.
+    SQLiteConversationRepository(path)._initialize_schema()
+    with sqlite3.connect(path) as connection:
+        rows = connection.execute(
+            """
+            SELECT conversation_id, handoff_reason, handoff_created_at
+            FROM conversations
+            WHERE status = 'human_handoff' AND handoff_reason IS NOT NULL
+            ORDER BY handoff_created_at DESC, conversation_id
+            """
+        ).fetchall()
+    return tuple(
+        HandoffCase(
+            conversation_id=conversation_id,
+            reason=HandoffReason(reason),
+            created_at=datetime.fromisoformat(created_at),
+        )
+        for conversation_id, reason, created_at in rows
+    )
 
 
 def _money(value: Decimal) -> str:

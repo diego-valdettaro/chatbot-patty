@@ -75,6 +75,7 @@ class ConversationState:
     order_details: OrderDetails = OrderDetails()
     confirmed_order: Order | None = None
     messages: tuple[ConversationMessage, ...] = ()
+    handoff_reason: HandoffReason | None = None
 
 
 def transition_status(current: ConversationStatus, target: ConversationStatus) -> ConversationStatus:
