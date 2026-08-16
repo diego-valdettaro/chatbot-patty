@@ -9,8 +9,16 @@ import pytest
 
 from patty_bot.domain.cart import Cart, CartItem
 from patty_bot.domain.catalog import Product
+from patty_bot.application.conversation_state import ConversationState, ConversationStatus, HandoffReason
 from patty_bot.domain.orders import OrderDetails
-from patty_bot.infrastructure.repository import ORDER_STATUS_PENDING, initialize_database, save_confirmed_order
+from patty_bot.infrastructure.conversation_repository import SQLiteConversationRepository
+from patty_bot.infrastructure.repository import (
+    ORDER_STATUS_PENDING,
+    initialize_database,
+    list_handoff_cases,
+    list_orders,
+    save_confirmed_order,
+)
 
 
 TMP_DIR = Path("tests/.tmp")
@@ -153,3 +161,37 @@ def test_save_confirmed_pickup_order_has_zero_delivery_fee():
         ).fetchone()
 
     assert order == ("pickup", "San Isidro", "16.00", "0.00", "16.00")
+
+
+def test_list_orders_returns_confirmed_order_snapshots_for_a_future_dashboard():
+    db_path = make_db_path("order-reader.sqlite3")
+    saved_order = save_confirmed_order(db_path, make_cart(), make_details(), reference_date=REFERENCE_DATE)
+
+    orders = list_orders(db_path)
+
+    assert len(orders) == 1
+    assert orders[0].id == saved_order.id
+    assert orders[0].details == make_details()
+    assert orders[0].total == Decimal("26.00")
+    assert orders[0].items[0].product_name == "Brownie de chocolate belga"
+    assert orders[0].items[0].unit_price == Decimal("8.00")
+
+
+def test_list_handoff_cases_returns_only_structured_human_owned_conversations():
+    db_path = make_db_path("handoff-reader.sqlite3")
+    conversation_repository = SQLiteConversationRepository(db_path)
+    conversation_repository.save(ConversationState(conversation_id="active", status=ConversationStatus.ACTIVE))
+    conversation_repository.save(
+        ConversationState(
+            conversation_id="needs-human",
+            status=ConversationStatus.HUMAN_HANDOFF,
+            handoff_reason=HandoffReason.PROCESSING_ERROR,
+        )
+    )
+
+    cases = list_handoff_cases(db_path)
+
+    assert len(cases) == 1
+    assert cases[0].conversation_id == "needs-human"
+    assert cases[0].reason is HandoffReason.PROCESSING_ERROR
+    assert cases[0].created_at.tzinfo is None

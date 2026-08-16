@@ -80,6 +80,7 @@ class ConversationService:
             order_details=state.order_details,
             confirmed_order=state.confirmed_order,
             messages=state.messages,
+            handoff_reason=state.handoff_reason,
         )
         self._save_state(updated_state, stage="transition_conversation")
         LOGGER.info(
@@ -187,6 +188,7 @@ class ConversationService:
             order_details=session.order_details,
             confirmed_order=session.confirmed_order,
             messages=messages + (ConversationMessage(role="assistant", content=reply),),
+            handoff_reason=state.handoff_reason,
         )
         try:
             self._save_state(updated_state, stage="persist_turn")
@@ -234,6 +236,7 @@ class ConversationService:
                     order_details=state.order_details,
                     confirmed_order=state.confirmed_order,
                     messages=state.messages + (ConversationMessage(role="user", content=user_message),),
+                    handoff_reason=state.handoff_reason,
                 ),
                 stage="persist_handoff_message",
             )
@@ -267,6 +270,7 @@ class ConversationService:
             order_details=state.order_details,
             confirmed_order=state.confirmed_order,
             messages=state.messages,
+            handoff_reason=state.handoff_reason,
         )
 
     def _status_after_turn(self, status: ConversationStatus, session: AgentSession) -> ConversationStatus:

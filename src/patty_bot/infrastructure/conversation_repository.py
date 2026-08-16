@@ -10,7 +10,12 @@ from typing import Any, Protocol
 
 from patty_bot.domain.cart import Cart, CartItem
 from patty_bot.domain.catalog import Product
-from patty_bot.application.conversation_state import ConversationMessage, ConversationState, ConversationStatus
+from patty_bot.application.conversation_state import (
+    ConversationMessage,
+    ConversationState,
+    ConversationStatus,
+    HandoffReason,
+)
 from patty_bot.domain.orders import Order, OrderDetails, OrderItem
 
 
@@ -35,7 +40,7 @@ class SQLiteConversationRepository:
         with sqlite3.connect(self._database_path) as connection:
             row = connection.execute(
                 """
-                SELECT status, cart_json, order_details_json, confirmed_order_json, messages_json
+                SELECT status, cart_json, order_details_json, confirmed_order_json, messages_json, handoff_reason
                 FROM conversations
                 WHERE conversation_id = ?
                 """,
@@ -50,6 +55,7 @@ class SQLiteConversationRepository:
             order_details=_order_details_from_data(_json_object(row[2])),
             confirmed_order=_order_from_data(_json_object(row[3])) if row[3] is not None else None,
             messages=tuple(_message_from_data(item) for item in _json_list(row[4])),
+            handoff_reason=HandoffReason(row[5]) if row[5] is not None else None,
         )
 
     def save(self, conversation_state: ConversationState) -> None:
@@ -58,14 +64,20 @@ class SQLiteConversationRepository:
             connection.execute(
                 """
                 INSERT INTO conversations (
-                    conversation_id, status, cart_json, order_details_json, confirmed_order_json, messages_json
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    conversation_id, status, cart_json, order_details_json, confirmed_order_json, messages_json,
+                    handoff_reason, handoff_created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, CASE WHEN ? IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END)
                 ON CONFLICT(conversation_id) DO UPDATE SET
                     status = excluded.status,
                     cart_json = excluded.cart_json,
                     order_details_json = excluded.order_details_json,
                     confirmed_order_json = excluded.confirmed_order_json,
-                    messages_json = excluded.messages_json
+                    messages_json = excluded.messages_json,
+                    handoff_reason = excluded.handoff_reason,
+                    handoff_created_at = CASE
+                        WHEN excluded.handoff_reason IS NULL THEN NULL
+                        ELSE COALESCE(conversations.handoff_created_at, excluded.handoff_created_at)
+                    END
                 """,
                 (
                     conversation_state.conversation_id,
@@ -76,6 +88,8 @@ class SQLiteConversationRepository:
                     if conversation_state.confirmed_order is not None
                     else None,
                     _to_json([_message_to_data(message) for message in conversation_state.messages]),
+                    _handoff_reason_to_value(conversation_state),
+                    _handoff_reason_to_value(conversation_state),
                 ),
             )
 
@@ -90,7 +104,9 @@ class SQLiteConversationRepository:
                     cart_json TEXT NOT NULL,
                     order_details_json TEXT NOT NULL,
                     confirmed_order_json TEXT,
-                    messages_json TEXT NOT NULL
+                    messages_json TEXT NOT NULL,
+                    handoff_reason TEXT,
+                    handoff_created_at TEXT
                 )
                 """
             )
@@ -98,6 +114,22 @@ class SQLiteConversationRepository:
             if "status" not in columns:
                 # Existing local databases retain their active conversations during this additive migration.
                 connection.execute("ALTER TABLE conversations ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+            if "handoff_reason" not in columns:
+                connection.execute("ALTER TABLE conversations ADD COLUMN handoff_reason TEXT")
+            if "handoff_created_at" not in columns:
+                connection.execute("ALTER TABLE conversations ADD COLUMN handoff_created_at TEXT")
+
+
+def _handoff_reason_to_value(conversation_state: ConversationState) -> str | None:
+    """Return the structured reason only for a human-owned conversation."""
+
+    if conversation_state.status is ConversationStatus.HUMAN_HANDOFF:
+        if conversation_state.handoff_reason is None:
+            raise ValueError("Human handoff conversations require a HandoffReason before persistence.")
+        return conversation_state.handoff_reason.value
+    if conversation_state.handoff_reason is not None:
+        raise ValueError("Only human handoff conversations may persist a HandoffReason.")
+    return None
 
 
 def _to_json(value: object) -> str:
