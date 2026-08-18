@@ -6,6 +6,7 @@ from pathlib import Path
 
 from patty_bot.agent.router import AgentTurn, ResponsesClient, create_openai_client, run_agent_turn
 from patty_bot.application.errors import AgentProviderError, ConversationPersistenceError
+from patty_bot.application.handoff_policy import decide_handoff
 from patty_bot.domain.catalog import Product
 from patty_bot.application.conversation_state import (
     ConversationMessage,
@@ -25,6 +26,7 @@ from patty_bot.agent.tool_executor import AgentSession
 
 LOGGER = logging.getLogger(__name__)
 SAFE_PROVIDER_REPLY = "No pude responder en este momento. Intenta nuevamente en unos instantes."
+HUMAN_HANDOFF_REPLY = "Voy a derivar tu conversacion a una persona del equipo para que pueda ayudarte."
 
 
 class ConversationService:
@@ -143,6 +145,9 @@ class ConversationService:
         if not allows_automatic_response(state.status):
             self._save_handoff_message(state, user_message)
             return AgentTurn(reply="", session=session)
+        handoff = decide_handoff(state, user_message)
+        if handoff is not None:
+            return self._initiate_detected_handoff(state, user_message, handoff.reason)
         conversation = tuple({"role": message.role, "content": message.content} for message in state.messages)
         try:
             settings = load_llm_settings()
@@ -188,12 +193,25 @@ class ConversationService:
             )
             return self._persist_turn(state, reply=turn.reply, session=turn.session, user_message=user_message)
         except AgentProviderError:
-            return self._persist_turn(
-                state,
-                reply=SAFE_PROVIDER_REPLY,
-                session=session,
+            return self._initiate_detected_handoff(state, user_message, HandoffReason.PROCESSING_ERROR)
+
+    def _initiate_detected_handoff(
+        self,
+        state: ConversationState,
+        user_message: str,
+        reason: HandoffReason,
+    ) -> AgentTurn:
+        """Persist a policy-selected handoff without entering the provider path."""
+
+        try:
+            updated_state = self.initiate_human_handoff(
+                state.conversation_id,
+                reason,
                 user_message=user_message,
             )
+        except ConversationPersistenceError:
+            return AgentTurn(reply=SAFE_PROVIDER_REPLY, session=self._agent_session(state))
+        return AgentTurn(reply=HUMAN_HANDOFF_REPLY, session=self._agent_session(updated_state))
 
     def _agent_session(self, state: ConversationState) -> AgentSession:
         return AgentSession(

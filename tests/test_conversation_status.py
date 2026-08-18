@@ -51,6 +51,13 @@ def test_operational_status_allows_expected_transitions(current, target) -> None
     assert transition_status(current, target) is target
 
 
+def test_confirmed_conversation_can_only_transfer_to_human_ownership() -> None:
+    assert (
+        transition_to_human_handoff(ConversationStatus.CONFIRMED, HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
+        is ConversationStatus.HUMAN_HANDOFF
+    )
+
+
 @pytest.mark.parametrize(
     ("current", "target"),
     (

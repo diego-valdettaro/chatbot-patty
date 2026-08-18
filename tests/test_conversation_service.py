@@ -11,12 +11,11 @@ from patty_bot.application.conversation_state import (
     ConversationMessage,
     ConversationState,
     ConversationStatus,
-    ConversationTransitionError,
     HandoffReason,
 )
 from patty_bot.infrastructure.conversation_repository import ConversationRepository, SQLiteConversationRepository
 from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings
-from patty_bot.application.conversation_service import ConversationService
+from patty_bot.application.conversation_service import HUMAN_HANDOFF_REPLY, ConversationService
 
 
 SETTINGS = LLMSettings(
@@ -137,8 +136,9 @@ def test_initiate_human_handoff_uses_the_domain_transition_rules() -> None:
     conversation_service = service(repository)
     repository.save(ConversationState(conversation_id="conversation-1", status=ConversationStatus.CONFIRMED))
 
-    with pytest.raises(ConversationTransitionError, match="Invalid conversation status transition"):
-        conversation_service.initiate_human_handoff("conversation-1", HandoffReason.CUSTOMER_REQUEST)
+    handoff = conversation_service.initiate_human_handoff("conversation-1", HandoffReason.CUSTOMER_REQUEST)
+
+    assert handoff.status is ConversationStatus.HUMAN_HANDOFF
 
 
 def test_handoff_survives_sqlite_recovery_and_blocks_automatic_responses(tmp_path, monkeypatch) -> None:
@@ -190,9 +190,46 @@ def test_unexpected_provider_errors_are_logged_and_translated_to_the_safe_reply(
 
     turn = conversation_service.handle_message("conversation-1", "mensaje privado")
 
-    assert turn.reply == "No pude responder en este momento. Intenta nuevamente en unos instantes."
+    assert turn.reply == HUMAN_HANDOFF_REPLY
+    state = repository.states["conversation-1"]
+    assert state.status is ConversationStatus.HUMAN_HANDOFF
+    assert state.handoff_reason is HandoffReason.PROCESSING_ERROR
     assert "agent provider error [conversation_id=conversation-1 stage=run_agent_turn error_type=RuntimeError]" in caplog.text
     assert "mensaje privado" not in caplog.text
+
+
+def test_detected_handoff_persists_the_message_without_configuring_or_calling_the_provider(monkeypatch) -> None:
+    repository = InMemoryConversationRepository()
+    conversation_service = service(repository)
+    monkeypatch.setattr(
+        "patty_bot.application.conversation_service.load_llm_settings",
+        lambda: pytest.fail("A handoff must happen before provider setup."),
+    )
+
+    turn = conversation_service.handle_message("conversation-1", "Quiero hablar con una persona.")
+
+    assert turn.reply == HUMAN_HANDOFF_REPLY
+    state = repository.states["conversation-1"]
+    assert state.status is ConversationStatus.HUMAN_HANDOFF
+    assert state.handoff_reason is HandoffReason.CUSTOMER_REQUEST
+    assert [message.content for message in state.messages] == ["Quiero hablar con una persona."]
+
+
+def test_detected_handoff_after_confirmation_blocks_the_provider(monkeypatch) -> None:
+    repository = InMemoryConversationRepository()
+    repository.save(ConversationState(conversation_id="conversation-1", status=ConversationStatus.CONFIRMED))
+    conversation_service = service(repository)
+    monkeypatch.setattr(
+        "patty_bot.application.conversation_service.load_llm_settings",
+        lambda: pytest.fail("Post-confirmation messages must not run the provider."),
+    )
+
+    turn = conversation_service.handle_message("conversation-1", "Quiero cambiar el pedido.")
+
+    assert turn.reply == HUMAN_HANDOFF_REPLY
+    state = repository.states["conversation-1"]
+    assert state.status is ConversationStatus.HUMAN_HANDOFF
+    assert state.handoff_reason is HandoffReason.OUTSIDE_SUPPORTED_SCOPE
 
 
 def test_persistence_errors_are_logged_and_translated_to_the_safe_reply(caplog) -> None:
