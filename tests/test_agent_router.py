@@ -32,6 +32,22 @@ class FakeClient:
         self.responses = FakeResponses(responses)
 
 
+class RecordedTrace:
+    def __init__(self, records, name, inputs):
+        self._records = records
+        self._record = {"name": name, "inputs": inputs, "outputs": None}
+
+    def __enter__(self):
+        self._records.append(self._record)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def end(self, *, outputs):
+        self._record["outputs"] = outputs
+
+
 SETTINGS = LLMSettings(
     provider="openai",
     model="test-model",
@@ -157,3 +173,51 @@ def test_router_stops_after_a_bounded_number_of_tool_rounds() -> None:
 
     assert len(client.responses.requests) == MAX_TOOL_ROUNDS
     assert turn.reply == "No pude completar el pedido en este momento. Intenta nuevamente."
+
+
+def test_langsmith_traces_are_redacted_at_turn_and_tool_boundaries(monkeypatch) -> None:
+    from patty_bot.agent import router
+
+    secret = "Ana Perez, +34 600 123 456, Calle Mayor 10"
+    traces = []
+    monkeypatch.setattr(
+        router.ls,
+        "trace",
+        lambda name, _run_type, *, project_name, inputs: RecordedTrace(traces, name, inputs),
+    )
+    client = FakeClient(
+        [
+            {
+                "output": [
+                    {
+                        "type": "function_call",
+                        "name": "update_order_details",
+                        "arguments": json.dumps(
+                            {
+                                "customer_name": "Ana Perez",
+                                "customer_phone": "+34 600 123 456",
+                                "fulfillment_type": "delivery",
+                                "requested_date": "2026-07-26",
+                                "delivery_address": "Calle Mayor 10",
+                                "pickup_store": None,
+                            }
+                        ),
+                        "call_id": "call_1",
+                    }
+                ],
+                "output_text": "",
+            },
+            {"output": [], "output_text": f"Perfecto, {secret}."},
+        ]
+    )
+
+    run_agent_turn(client, SETTINGS, session(), secret, [{"role": "assistant", "content": secret}])
+
+    serialized_traces = repr(traces)
+    assert secret not in serialized_traces
+    assert "Ana Perez" not in serialized_traces
+    assert "+34 600 123 456" not in serialized_traces
+    assert "Calle Mayor 10" not in serialized_traces
+    assert traces[0]["inputs"]["user_message"]["redacted"] is True
+    assert traces[1]["inputs"] == {"name": "update_order_details", "argument_count": 6}
+    assert traces[1]["outputs"] == {"ok": True, "error_codes": []}

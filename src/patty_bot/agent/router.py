@@ -6,6 +6,12 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 import langsmith as ls
+from patty_bot.infrastructure.observability import (
+    safe_tool_inputs,
+    safe_tool_outputs,
+    safe_turn_inputs,
+    safe_turn_outputs,
+)
 from patty_bot.infrastructure.config import LLMSettings
 from patty_bot.agent.openai_adapter import openai_tool_definitions
 from patty_bot.agent.tool_executor import AgentSession, execute_tool_call
@@ -49,10 +55,12 @@ def create_openai_client(settings: LLMSettings) -> ResponsesClient:
         raise ValueError("LangSmith tracing must be configured before creating an LLM client.")
     try:
         from openai import OpenAI
-        from langsmith.wrappers import wrap_openai
     except ImportError as error:
         raise RuntimeError("The OpenAI or LangSmith SDK is not installed.") from error
-    return wrap_openai(OpenAI(api_key=settings.api_key))
+    # Do not wrap the client with LangSmith: the wrapper records complete provider
+    # requests, including customer messages and raw tool arguments.  The explicit
+    # traces below use the redacted observability boundary instead.
+    return OpenAI(api_key=settings.api_key)
 
 
 def run_agent_turn(
@@ -64,20 +72,20 @@ def run_agent_turn(
 ) -> AgentTurn:
     """Run a bounded Responses API tool loop with a small amount of chat context."""
 
-    trace_inputs = {
-        "user_message": user_message,
-        "conversation": _conversation_input(conversation),
-        "model": settings.model,
-        "reasoning_effort": settings.reasoning_effort,
-    }
+    trace_inputs = safe_turn_inputs(
+        user_message=user_message,
+        conversation=conversation,
+        model=settings.model,
+        reasoning_effort=settings.reasoning_effort,
+    )
     with ls.trace("Patty chat turn", "chain", project_name=settings.langsmith_project, inputs=trace_inputs) as run:
         turn = _run_agent_loop(client, settings, session, user_message, conversation)
         run.end(
-            outputs={
-                "reply": turn.reply,
-                "cart_item_count": sum(item.quantity for item in turn.session.cart.items),
-                "order_confirmed": turn.session.confirmed_order is not None,
-            }
+            outputs=safe_turn_outputs(
+                reply=turn.reply,
+                cart_item_count=sum(item.quantity for item in turn.session.cart.items),
+                order_confirmed=turn.session.confirmed_order is not None,
+            )
         )
     return turn
 
@@ -151,7 +159,7 @@ def _execute_traced_tool_call(
         f"Tool: {tool_call.name}",
         "tool",
         project_name=project,
-        inputs={"name": tool_call.name, "arguments": dict(tool_call.arguments)},
+        inputs=safe_tool_inputs(name=tool_call.name, arguments=tool_call.arguments),
     ) as run:
         execution = execute_tool_call(
             session,
@@ -159,7 +167,7 @@ def _execute_traced_tool_call(
             # The model can never provide the UI-originated confirmation signal.
             explicit_confirmation=False,
         )
-        run.end(outputs=execution.result.to_dict())
+        run.end(outputs=safe_tool_outputs(execution.result))
     return execution
 
 
