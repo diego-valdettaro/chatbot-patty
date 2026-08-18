@@ -105,7 +105,13 @@ def test_human_handoff_records_the_customer_message_without_running_the_agent(mo
     repository = InMemoryConversationRepository()
     conversation_service = service(repository)
     conversation_id = "conversation-1"
-    repository.save(ConversationState(conversation_id=conversation_id, status=ConversationStatus.HUMAN_HANDOFF))
+    repository.save(
+        ConversationState(
+            conversation_id=conversation_id,
+            status=ConversationStatus.HUMAN_HANDOFF,
+            handoff_reason=HandoffReason.CUSTOMER_REQUEST,
+        )
+    )
     monkeypatch.setattr(
         "patty_bot.application.conversation_service.run_agent_turn",
         lambda *_args: pytest.fail("The automatic agent must not run during human handoff."),

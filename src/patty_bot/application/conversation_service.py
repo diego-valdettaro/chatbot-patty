@@ -11,9 +11,11 @@ from patty_bot.application.conversation_state import (
     ConversationMessage,
     ConversationState,
     ConversationStatus,
+    HandoffReason,
     allows_automatic_response,
     allows_order_modification,
     transition_status,
+    transition_to_human_handoff,
 )
 from patty_bot.infrastructure.conversation_repository import ConversationRepository, SQLiteConversationRepository
 from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings, load_llm_settings
@@ -87,6 +89,41 @@ class ConversationService:
             "conversation transitioned [conversation_id=%s stage=transition_conversation status=%s]",
             conversation_id,
             target.value,
+        )
+        return updated_state
+
+    def initiate_human_handoff(
+        self,
+        conversation_id: str,
+        reason: HandoffReason,
+        *,
+        user_message: str | None = None,
+    ) -> ConversationState:
+        """Transfer a conversation to a human and persist its resumable context.
+
+        A channel adapter or a future router must supply the structured reason.
+        The optional triggering customer message is retained alongside the prior
+        conversation history so an operator can resume without asking the
+        customer to repeat it.  This method intentionally contains no policy
+        for deciding *when* a handoff is necessary.
+        """
+
+        state = self.load_conversation(conversation_id)
+        updated_state = ConversationState(
+            conversation_id=state.conversation_id,
+            status=transition_to_human_handoff(state.status, reason),
+            cart=state.cart,
+            order_details=state.order_details,
+            confirmed_order=state.confirmed_order,
+            messages=state.messages
+            + ((ConversationMessage(role="user", content=user_message),) if user_message is not None else ()),
+            handoff_reason=reason,
+        )
+        self._save_state(updated_state, stage="initiate_human_handoff")
+        LOGGER.info(
+            "human handoff initiated [conversation_id=%s stage=initiate_human_handoff reason=%s]",
+            conversation_id,
+            reason.value,
         )
         return updated_state
 
