@@ -1,0 +1,33 @@
+name: Tarea de estabilización
+description: Trabajo atómico del roadmap de Patty.
+title: "[PXX] "
+labels: ["patty:ready"]
+body:
+  - type: input
+    id: roadmap
+    attributes:
+      label: ID del roadmap
+      placeholder: P04
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objetivo y criterio de aceptación
+      description: Define un resultado verificable y acotado.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencias
+      description: Enlaza Issues/PRs que deben estar fusionados, o indica "Ninguna".
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validación esperada
+      placeholder: Tests automatizados y comprobación manual aplicable.
+    validations:
+      required: true
