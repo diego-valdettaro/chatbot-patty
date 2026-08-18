@@ -1,4 +1,17 @@
-# Etapa actual - Etapa 8: Derivación humana y límites conversacionales
+# Etapa actual - Estabilización antes de integrar canales
+
+## Seguimiento oficial
+
+El plan ejecutable, sus dependencias y el estado de cada corte viven en
+[`stabilization-roadmap.md`](stabilization-roadmap.md). Cada tarea se gestiona
+en un único Issue y un único PR con `Closes #<issue>`. GitHub actualiza sus
+labels cuando un PR recibe aprobación, cambios solicitados o se fusiona.
+
+Estado inmediato: **Ola 0 / P00 — Tracking y Action de PRs: en progreso**.
+La siguiente tarea solo se considera lista cuando su dependencia figure como
+fusionada en el roadmap y en GitHub.
+
+# Historial - Etapa 8: Derivación humana y límites conversacionales
 
 ## Objetivo
 
