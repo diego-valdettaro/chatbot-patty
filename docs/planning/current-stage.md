@@ -7,10 +7,12 @@ El plan ejecutable, sus dependencias y el estado de cada corte viven en
 en un único Issue y un único PR con `Closes #<issue>`. GitHub actualiza sus
 labels cuando un PR recibe aprobación, cambios solicitados o se fusiona.
 
-Estado inmediato: **P05 / Issue #8 — Detectar y clasificar derivaciones
-humanas: listo**. P00 a P04 y P01 ya están fusionadas; el detalle, enlaces y
-dependencias vigentes están en el roadmap. P10 / Issue #13 permanece bloqueada
-hasta recibir el catálogo real validado.
+Estado inmediato: **P06 / Issue #9 — Integrar derivación humana en Streamlit**
+y **P07 / Issue #10 — Endurecer límites e instrucciones maliciosas** están
+en revisión. P00 a P05, P11 y P01 ya están fusionadas; el detalle, enlaces y
+dependencias vigentes están en el roadmap. P08 queda bloqueada hasta el merge
+de P07 y P10 / Issue #13 permanece bloqueada hasta recibir el catálogo real
+validado.
 
 # Historial - Etapa 8: Derivación humana y límites conversacionales
 
