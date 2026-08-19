@@ -16,6 +16,7 @@ from patty_bot.application.conversation_state import (
     HandoffReason,
 )
 from patty_bot.infrastructure.conversation_repository import SQLiteConversationRepository
+from patty_bot.application.errors import ConversationStateCorruptionError
 from patty_bot.domain.orders import OrderDetails
 
 
@@ -104,3 +105,30 @@ def test_sqlite_repository_migrates_an_existing_conversations_table_additively(t
     with sqlite3.connect(database_path) as connection:
         columns = {row[1] for row in connection.execute("PRAGMA table_info(conversations)")}
     assert {"status", "handoff_reason", "handoff_created_at"}.issubset(columns)
+
+
+@pytest.mark.parametrize(
+    ("column", "corrupt_value"),
+    (
+        ("messages_json", "{not json"),
+        ("cart_json", "[]"),
+    ),
+)
+def test_sqlite_repository_rejects_corrupt_state_without_overwriting_the_row(tmp_path, column, corrupt_value) -> None:
+    database_path = tmp_path / "corrupt-conversation.sqlite3"
+    repository = SQLiteConversationRepository(database_path)
+    repository.save(ConversationState(conversation_id="conversation-1"))
+    with sqlite3.connect(database_path) as connection:
+        connection.execute(
+            f"UPDATE conversations SET {column} = ? WHERE conversation_id = ?",
+            (corrupt_value, "conversation-1"),
+        )
+
+    with pytest.raises(ConversationStateCorruptionError, match="Persisted conversation state is invalid"):
+        repository.load("conversation-1")
+
+    with sqlite3.connect(database_path) as connection:
+        stored_value = connection.execute(
+            f"SELECT {column} FROM conversations WHERE conversation_id = ?", ("conversation-1",)
+        ).fetchone()[0]
+    assert stored_value == corrupt_value

@@ -74,7 +74,17 @@ def execute_tool_call(
     if handler is None:
         # The registry remains the allowlist; this guard identifies incomplete internal wiring.
         return _failed_execution(session, "unsupported_tool", "This tool has no executor handler.")
-    return handler(session, _arguments_for_domain_tool(tool_call))
+    try:
+        return handler(session, _arguments_for_domain_tool(tool_call))
+    except Exception:
+        # Tool boundaries must never leak implementation or storage failures to
+        # the provider or customer.  The original session is preserved so a
+        # later turn cannot continue from a partially updated result.
+        return _failed_execution(
+            session,
+            "tool_execution_failure",
+            "The requested action could not be completed.",
+        )
 
 
 def _execute_search_catalog(session: AgentSession, arguments: Mapping[str, JsonValue]) -> ToolExecution:
