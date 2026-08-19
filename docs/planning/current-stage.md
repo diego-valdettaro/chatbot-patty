@@ -7,9 +7,10 @@ El plan ejecutable, sus dependencias y el estado de cada corte viven en
 en un único Issue y un único PR con `Closes #<issue>`. GitHub actualiza sus
 labels cuando un PR recibe aprobación, cambios solicitados o se fusiona.
 
-Estado inmediato: **Ola 0 / P00 — Tracking y Action de PRs: en progreso**.
-La siguiente tarea solo se considera lista cuando su dependencia figure como
-fusionada en el roadmap y en GitHub.
+Estado inmediato: **P05 / Issue #8 — Detectar y clasificar derivaciones
+humanas: listo**. P00 a P04 y P01 ya están fusionadas; el detalle, enlaces y
+dependencias vigentes están en el roadmap. P10 / Issue #13 permanece bloqueada
+hasta recibir el catálogo real validado.
 
 # Historial - Etapa 8: Derivación humana y límites conversacionales
 
