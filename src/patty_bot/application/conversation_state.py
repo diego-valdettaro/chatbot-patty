@@ -51,7 +51,9 @@ _ALLOWED_TRANSITIONS: dict[ConversationStatus, frozenset[ConversationStatus]] = 
             ConversationStatus.CANCELLED,
         }
     ),
-    ConversationStatus.CONFIRMED: frozenset(),
+    # A confirmed order cannot be edited, but a later customer message needs a
+    # human rather than an automatic response.
+    ConversationStatus.CONFIRMED: frozenset({ConversationStatus.HUMAN_HANDOFF}),
     ConversationStatus.HUMAN_HANDOFF: frozenset(),
     ConversationStatus.CANCELLED: frozenset(),
 }
