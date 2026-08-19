@@ -36,6 +36,20 @@ _OUTSIDE_SCOPE_PATTERNS = (
     r"\b(mayorista\w*|empresa\w*|corporativ\w*|b2b|factura|ruc)\b",
 )
 
+# Customer messages are untrusted input.  These patterns deliberately require
+# both an override verb and a protected business control, avoiding a handoff
+# for ordinary questions such as "cual es el precio?".
+_INSTRUCTION_OVERRIDE_PATTERNS = (
+    r"\b(ignore|ignora|olvida|omite|anula|desactiva|saltate|bypass|override)\b.*\b"
+    r"(instruccion\w*|regla\w*|sistema|prompt|precio\w*|total\w*|confirmacion|boton)\b",
+    r"\b(cambia|modifica|altera|fija|establece|set)\b.*\b"
+    r"(precio\w*|total\w*|regla\w*|confirmacion|boton)\b",
+    r"\b(precio\w*|total\w*)\b.*\b(sea|por|a)\b.*\b(gratis|cero|0)\b",
+    r"\b(confirma\w*|confirmacion)\b.*\b(sin|omite|ignora|saltate|bypass)\b.*\b"
+    r"(boton|accion|interfaz)\b",
+    r"^\s*(system|developer|assistant)\s*:",
+)
+
 _UNRESOLVED_INPUTS = frozenset(
     {
         "?",
@@ -61,6 +75,8 @@ def decide_handoff(state: ConversationState, user_message: str) -> HandoffDecisi
     if _matches_any(normalized, _HUMAN_REQUEST_PATTERNS):
         return HandoffDecision(HandoffReason.CUSTOMER_REQUEST)
     if state.status is ConversationStatus.CONFIRMED:
+        return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
+    if _matches_any(normalized, _INSTRUCTION_OVERRIDE_PATTERNS):
         return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
     if _matches_any(normalized, _OUTSIDE_SCOPE_PATTERNS):
         return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
