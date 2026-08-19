@@ -15,6 +15,7 @@ from patty_bot.infrastructure.config import (
 )
 from patty_bot.application.conversation_state import ConversationState
 from patty_bot.application.conversation_service import ConversationService
+from patty_bot.application.handoff_presentation import handoff_customer_message, locks_order_controls
 from patty_bot.domain.orders import (
     OrderDetails,
     delivery_fee_for_order,
@@ -194,13 +195,13 @@ def render_order_details(disabled: bool = False) -> OrderDetails:
     return details
 
 
-def render_confirmation(order_details: OrderDetails) -> None:
+def render_confirmation(order_details: OrderDetails, *, disabled: bool = False) -> None:
     st.subheader("Confirmacion")
     state = st.session_state.conversation_state
     cart = state.cart
     validation = validate_order_details(order_details)
     # Confirmation is intentionally one-way in this MVP to prevent duplicate local orders.
-    can_confirm = not cart.is_empty and validation.is_valid and state.confirmed_order is None
+    can_confirm = not disabled and not cart.is_empty and validation.is_valid and state.confirmed_order is None
 
     if state.confirmed_order is not None:
         st.success("Pedido confirmado. Queda pendiente de pago y revision.")
@@ -243,18 +244,24 @@ def render_chat() -> None:
 
     st.subheader("Habla con Patty")
     st.caption("Dime qué necesitas y te ayudo a armar el pedido.")
+    state = st.session_state.conversation_state
+    handoff_message = handoff_customer_message(state)
+    handoff_active = handoff_message is not None
+
+    if handoff_message is not None:
+        st.warning(f"Tu conversación está siendo atendida por una persona. {handoff_message}")
 
     conversation = st.container(height=520, border=True)
     with conversation:
-        if not st.session_state.conversation_state.messages:
+        if not state.messages:
             with st.chat_message("assistant"):
                 st.write("¡Hola! Cuéntame qué productos buscas para tu pedido.")
-        for message in st.session_state.conversation_state.messages:
+        for message in state.messages:
             with st.chat_message(message.role):
                 st.write(message.content)
 
-    user_message = st.chat_input("Escribe un mensaje para Patty")
-    if user_message:
+    user_message = st.chat_input("Escribe un mensaje para Patty", disabled=handoff_active)
+    if user_message and not handoff_active:
         respond_to_chat_message(user_message)
         st.rerun()
 
@@ -267,8 +274,8 @@ def main() -> None:
 
     st.title(APP_TITLE)
     st.caption("Arma tu pedido conversando con Patty. Puedes revisar y confirmar los detalles a la derecha.")
-    # Every editable area receives the same lock after a successful confirmation.
-    order_confirmed = st.session_state.conversation_state.confirmed_order is not None
+    # A confirmed order and a human-owned conversation are both read-only in this channel.
+    controls_locked = locks_order_controls(st.session_state.conversation_state)
 
     chat_column, order_column = st.columns((7, 5), gap="large")
     with chat_column:
@@ -279,18 +286,19 @@ def main() -> None:
             catalog_query = st.text_input(
                 "Buscar producto, alias o categoría",
                 placeholder="Ej. red velvet",
+                disabled=controls_locked,
             )
-            render_catalog_result(search_products(catalog, catalog_query), catalog, disabled=order_confirmed)
+            render_catalog_result(search_products(catalog, catalog_query), catalog, disabled=controls_locked)
 
     with order_column:
         st.subheader("Tu pedido")
         order_details = st.session_state.conversation_state.order_details
-        render_cart(order_details, disabled=order_confirmed)
+        render_cart(order_details, disabled=controls_locked)
         st.divider()
-        with st.expander("Datos de entrega", expanded=not order_confirmed):
-            order_details = render_order_details(disabled=order_confirmed)
+        with st.expander("Datos de entrega", expanded=not controls_locked):
+            order_details = render_order_details(disabled=controls_locked)
         st.divider()
-        render_confirmation(order_details)
+        render_confirmation(order_details, disabled=controls_locked)
 
 
 if __name__ == "__main__":
