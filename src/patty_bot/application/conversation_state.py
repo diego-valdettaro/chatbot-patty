@@ -25,6 +25,7 @@ class HandoffReason(str, Enum):
     """
 
     CUSTOMER_REQUEST = "customer_request"
+    HORECA_OR_SPECIAL_ORDER = "horeca_or_special_order"
     REPEATED_UNRESOLVED_INPUT = "repeated_unresolved_input"
     UNRESOLVED_AMBIGUITY = "unresolved_ambiguity"
     OUTSIDE_SUPPORTED_SCOPE = "outside_supported_scope"

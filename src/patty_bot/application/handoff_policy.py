@@ -21,6 +21,20 @@ _HUMAN_REQUEST_PATTERNS = (
     r"\batender (un |una )?(persona|humano|asesor|agente|operador)\b",
 )
 
+# These requests need a quotation, design review, or availability review that
+# the MVP does not own.  They are intentionally checked before the generic
+# outside-scope policy so the customer receives the dedicated handoff message.
+_HORECA_OR_SPECIAL_ORDER_PATTERNS = (
+    r"\b(horeca|restaurante\w*|restaurant\w*|hotel\w*|cafeteria\w*)\b",
+    r"\b(mayorista\w*|wholesale\w*|empresa\w*|negocio\w*|business\w*|corporativ\w*|b2b)\b",
+    r"\b(tort\w*|pastel\w*).+\b(piso\w*|nivel\w*)\b|\bmulti[- ]?tier\b",
+    r"\b(boda\w*|matrimonio\w*|wedding)\b",
+    r"\b(diseno\w*|decoracion\w*).+\b(personaliz\w*|especial\w*|medida)\b",
+    r"\b(personaliz\w*|especial\w*|medida).+\b(diseno\w*|decoracion\w*|tort\w*|pastel\w*)\b",
+    r"\b(tort\w*|pastel\w*|cake\w*).+\b(personaliz\w*|especial\w*|medida)\b|\bcustom design\b",
+    r"\b(evento\w*|event\w*)\b",
+)
+
 _OUTSIDE_SCOPE_PATTERNS = (
     # Payments.
     r"\b(pago|pagar|tarjeta|transferencia|yape|plin)\b",
@@ -72,6 +86,8 @@ def decide_handoff(state: ConversationState, user_message: str) -> HandoffDecisi
     """
 
     normalized = _normalize(user_message)
+    if _matches_any(normalized, _HORECA_OR_SPECIAL_ORDER_PATTERNS):
+        return HandoffDecision(HandoffReason.HORECA_OR_SPECIAL_ORDER)
     if _matches_any(normalized, _HUMAN_REQUEST_PATTERNS):
         return HandoffDecision(HandoffReason.CUSTOMER_REQUEST)
     if state.status is ConversationStatus.CONFIRMED:

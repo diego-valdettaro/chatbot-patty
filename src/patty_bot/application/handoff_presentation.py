@@ -3,8 +3,14 @@
 from patty_bot.application.conversation_state import ConversationState, ConversationStatus, HandoffReason
 
 
+HORECA_OR_SPECIAL_ORDER_HANDOFF_MESSAGE = (
+    "Claro! Para pedidos HORECA o tortas especiales necesitamos revisarlo de forma personalizada. "
+    "Te conecto con nuestro equipo para ayudarte con la cotización, diseño y disponibilidad."
+)
+
 _SAFE_HANDOFF_MESSAGES: dict[HandoffReason, str] = {
     HandoffReason.CUSTOMER_REQUEST: "Una persona del equipo continuará contigo en breve.",
+    HandoffReason.HORECA_OR_SPECIAL_ORDER: HORECA_OR_SPECIAL_ORDER_HANDOFF_MESSAGE,
     HandoffReason.REPEATED_UNRESOLVED_INPUT: "Una persona del equipo revisará tu pedido para entenderlo correctamente.",
     HandoffReason.UNRESOLVED_AMBIGUITY: "Una persona del equipo revisará los detalles para evitar errores en tu pedido.",
     HandoffReason.OUTSIDE_SUPPORTED_SCOPE: "Esta solicitud necesita la revisión de una persona del equipo.",
