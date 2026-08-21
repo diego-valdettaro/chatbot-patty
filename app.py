@@ -9,7 +9,7 @@ from patty_bot.domain.catalog import CatalogSearchResult, load_catalog, search_p
 from patty_bot.application.logging import configure_application_logging
 from patty_bot.infrastructure.config import (
     APP_TITLE,
-    CATALOG_SAMPLE_PATH,
+    CATALOG_PATH,
     DATABASE_PATH,
     PICKUP_STORES,
 )
@@ -44,8 +44,8 @@ def persist_conversation_state(state: ConversationState) -> None:
 
 @st.cache_data
 def get_catalog():
-    # The sample catalog is immutable during a Streamlit session, so avoid re-reading its CSV on reruns.
-    return load_catalog(CATALOG_SAMPLE_PATH)
+    # The validated B2C catalog is immutable during a Streamlit session, so avoid re-reading it on reruns.
+    return load_catalog(CATALOG_PATH)
 
 
 def format_price(value) -> str:
@@ -58,15 +58,18 @@ def render_catalog_result(result: CatalogSearchResult, catalog, disabled: bool =
         return
 
     if not result.found:
-        st.warning("No encontramos ese producto en el catalogo sample de Patty.")
+        st.warning("No encontramos ese producto en el catálogo disponible de Patty.")
         return
 
     for match in result.matches:
         product = match.product
         columns = st.columns([3, 1, 1])
         with columns[0]:
-            st.write(f"**{product.name}**")
-            st.caption(f"{product.category} - {match.match_type} - score {match.score:.2f}")
+            st.write(f"**{product.display_name}**")
+            merchandising = " · ".join(part for part in (product.category, product.portions_or_units) if part)
+            st.caption(f"{merchandising} - {match.match_type} - score {match.score:.2f}")
+            if product.description:
+                st.caption(product.description)
         with columns[1]:
             st.write(format_price(product.price))
         with columns[2]:
@@ -94,7 +97,7 @@ def render_cart(order_details: OrderDetails, disabled: bool = False) -> None:
     for item in cart.items:
         columns = st.columns([3, 1, 1, 1])
         with columns[0]:
-            st.write(f"**{item.product.name}**")
+            st.write(f"**{item.product.display_name}**")
             st.caption(format_price(item.product.price))
         with columns[1]:
             quantity = st.number_input(

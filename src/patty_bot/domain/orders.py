@@ -158,7 +158,7 @@ def create_confirmed_order(
     items = tuple(
         OrderItem(
             product_id=item.product.id,
-            product_name=item.product.name,
+            product_name=item.product.display_name,
             unit_price=item.product.price,
             quantity=item.quantity,
             line_subtotal=item.line_subtotal,
