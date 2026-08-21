@@ -21,6 +21,19 @@ REQUIRED_CATALOG_COLUMNS = (
     "servings_max",
     "allergens",
 )
+B2C_CATALOG_COLUMNS = (
+    "producto_id",
+    "catalogo",
+    "categoria",
+    "nombre",
+    "presentacion",
+    "porciones_o_unidades",
+    "precio_pen",
+    "descripcion",
+    "activo_chatbot",
+)
+B2C_AUTOMATIC_CATALOGS = frozenset({"Postres enteros", "Dulcecitos"})
+B2C_EXCLUDED_CATEGORY = "Personalizados"
 # RapidFuzz scores are percentages; they are kept here with match priorities so tuning stays explicit.
 EXACT_MATCH_SCORE = 1.0
 CATEGORY_MATCH_SCORE = 1.0
@@ -30,12 +43,15 @@ MIN_PARTIAL_QUERY_LENGTH = 4
 MIN_FUZZY_QUERY_LENGTH = 3
 MATCH_TYPE_PRIORITIES = {
     "exact_name": 0,
-    "exact_alias": 1,
-    "partial_name": 2,
-    "partial_alias": 3,
-    "fuzzy_name": 4,
-    "fuzzy_alias": 5,
-    "category": 6,
+    "exact_presentation": 1,
+    "exact_alias": 2,
+    "partial_name": 3,
+    "partial_presentation": 4,
+    "partial_alias": 5,
+    "fuzzy_name": 6,
+    "fuzzy_presentation": 7,
+    "fuzzy_alias": 8,
+    "category": 9,
 }
 
 
@@ -50,6 +66,9 @@ class Product:
     servings_min: int | None = None
     servings_max: int | None = None
     allergens: tuple[str, ...] = ()
+    presentation: str = ""
+    portions_or_units: str = ""
+    description: str = ""
 
     def __post_init__(self) -> None:
         if not self.id.strip():
@@ -73,6 +92,12 @@ class Product:
         if not all(isinstance(allergen, str) for allergen in self.allergens):
             raise ValueError("Product allergens must contain strings.")
         object.__setattr__(self, "allergens", tuple(allergen.strip() for allergen in self.allergens if allergen.strip()))
+
+    @property
+    def display_name(self) -> str:
+        """Keep same-name catalog variants distinct in every customer-facing surface."""
+
+        return f"{self.name} — {self.presentation}" if self.presentation else self.name
 
 
 @dataclass(frozen=True)
@@ -106,8 +131,15 @@ def load_catalog(path: str | Path) -> tuple[Product, ...]:
     # Validate every row before returning a catalog so downstream search can assume valid products.
     with Path(path).open(newline="", encoding="utf-8") as catalog_file:
         reader = csv.DictReader(catalog_file)
-        _validate_required_columns(reader.fieldnames)
-        products = tuple(_product_from_row(row, row_number) for row_number, row in enumerate(reader, start=2))
+        if _is_b2c_catalog(reader.fieldnames):
+            products = tuple(
+                _product_from_b2c_row(row, row_number)
+                for row_number, row in enumerate(reader, start=2)
+                if _is_automatic_b2c_row(row)
+            )
+        else:
+            _validate_required_columns(reader.fieldnames)
+            products = tuple(_product_from_row(row, row_number) for row_number, row in enumerate(reader, start=2))
 
     _validate_unique_ids(products)
     return products
@@ -201,6 +233,10 @@ def _validate_required_columns(fieldnames: list[str] | None) -> None:
         raise ValueError(f"Catalog CSV is missing required columns: {missing}.")
 
 
+def _is_b2c_catalog(fieldnames: list[str] | None) -> bool:
+    return fieldnames is not None and all(column in fieldnames for column in B2C_CATALOG_COLUMNS)
+
+
 def _product_from_row(row: dict[str, str], row_number: int) -> Product:
     # Add the source row to parsing errors so catalog maintenance is actionable.
     try:
@@ -217,6 +253,47 @@ def _product_from_row(row: dict[str, str], row_number: int) -> Product:
         )
     except ValueError as error:
         raise ValueError(f"Invalid catalog row {row_number}: {error}") from error
+
+
+def _is_automatic_b2c_row(row: dict[str, str]) -> bool:
+    return (
+        row["activo_chatbot"].strip().casefold() == "si"
+        and row["catalogo"].strip() in B2C_AUTOMATIC_CATALOGS
+        and row["categoria"].strip() != B2C_EXCLUDED_CATEGORY
+        and "evento" not in _normalize_text(row["descripcion"])
+    )
+
+
+def _product_from_b2c_row(row: dict[str, str], row_number: int) -> Product:
+    try:
+        name = row["nombre"].strip()
+        presentation = row["presentacion"].strip()
+        portions_or_units = row["porciones_o_unidades"].strip()
+        servings = _parse_b2c_servings(portions_or_units)
+        return Product(
+            id=row["producto_id"].strip(),
+            name=name,
+            aliases=_b2c_aliases(name, presentation),
+            category=row["categoria"].strip(),
+            price=_parse_price(row["precio_pen"], row_number),
+            active=True,
+            servings_min=servings,
+            servings_max=servings,
+            presentation=presentation,
+            portions_or_units=portions_or_units,
+            description=row["descripcion"].strip(),
+        )
+    except ValueError as error:
+        raise ValueError(f"Invalid B2C catalog row {row_number}: {error}") from error
+
+
+def _b2c_aliases(name: str, presentation: str) -> tuple[str, ...]:
+    return tuple(alias for alias in (name, f"{name} {presentation}".strip()) if alias)
+
+
+def _parse_b2c_servings(value: str) -> int | None:
+    match = re.search(r"\d+", value)
+    return int(match.group()) if match else None
 
 
 def _parse_aliases(value: str) -> tuple[str, ...]:
@@ -287,6 +364,7 @@ def _normalize_text(value: str) -> str:
 def _best_product_match(product: Product, normalized_query: str) -> CatalogMatch | None:
     candidates = (
         ("name", _normalize_text(product.name)),
+        ("presentation", _normalize_text(product.display_name)),
         *(("alias", _normalize_text(alias)) for alias in product.aliases),
     )
     matches = [
@@ -324,6 +402,7 @@ def _best_fuzzy_match(product: Product, normalized_query: str) -> CatalogMatch |
         match
         for source, candidate in (
             ("name", _normalize_text(product.name)),
+            ("presentation", _normalize_text(product.display_name)),
             *(("alias", _normalize_text(alias)) for alias in product.aliases),
         )
         if (match := _fuzzy_candidate_match(product, normalized_query, source, candidate)) is not None

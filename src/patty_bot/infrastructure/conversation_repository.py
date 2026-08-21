@@ -186,6 +186,9 @@ def _product_to_data(product: Product) -> dict[str, object]:
         "servings_min": product.servings_min,
         "servings_max": product.servings_max,
         "allergens": list(product.allergens),
+        "presentation": product.presentation,
+        "portions_or_units": product.portions_or_units,
+        "description": product.description,
     }
 
 
@@ -202,6 +205,9 @@ def _product_from_data(data: object) -> Product:
         servings_min=data.get("servings_min"),
         servings_max=data.get("servings_max"),
         allergens=tuple(data.get("allergens", [])),
+        presentation=data.get("presentation", ""),
+        portions_or_units=data.get("portions_or_units", ""),
+        description=data.get("description", ""),
     )
 
 

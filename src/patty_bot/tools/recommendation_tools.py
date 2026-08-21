@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
 from patty_bot.domain.catalog import Product
 from patty_bot.domain.recommendations import RecommendationRequest, RecommendationService
+from patty_bot.tools.product_serialization import serialize_product
 
 
 def recommend_products(
@@ -24,9 +25,11 @@ def recommend_products(
             "recommendations": [
                 {
                     "product_id": recommendation.product.id,
-                    "name": recommendation.product.name,
-                    "category": recommendation.product.category,
-                    "price": f"{recommendation.product.price:.2f}",
+                    **{
+                        key: value
+                        for key, value in serialize_product(recommendation.product).items()
+                        if key != "id"
+                    },
                     "score": recommendation.score,
                     "reasons": list(recommendation.reasons),
                 }

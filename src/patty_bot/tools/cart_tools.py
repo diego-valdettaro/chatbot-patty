@@ -4,6 +4,7 @@ from typing import Iterable, Mapping
 from patty_bot.domain.cart import Cart, add_product_to_cart, change_cart_item_quantity, remove_product_from_cart
 from patty_bot.domain.catalog import Product
 from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
+from patty_bot.tools.product_serialization import serialize_product
 
 
 @dataclass(frozen=True)
@@ -95,12 +96,7 @@ def _serialize_cart(cart: Cart) -> dict[str, JsonValue]:
         "subtotal": f"{cart.subtotal:.2f}",
         "items": [
             {
-                "product": {
-                    "id": item.product.id,
-                    "name": item.product.name,
-                    "category": item.product.category,
-                    "price": f"{item.product.price:.2f}",
-                },
+                "product": serialize_product(item.product),
                 "quantity": item.quantity,
                 "line_subtotal": f"{item.line_subtotal:.2f}",
             }

@@ -1,0 +1,178 @@
+producto_id,catalogo,categoria,nombre,presentacion,porciones_o_unidades,medidas,precio_pen,descripcion,anticipacion,activo_chatbot
+B2C-001,Postres enteros,Tortas,Turron de chocolate,Chico,6 porciones,19 x 15 cm,55,"Turron de chocolate con pecanas, cubierto con fudge casero de Patty.",48 horas,Si
+B2C-002,Postres enteros,Tortas,Turron de chocolate,Grande,12 porciones,19 x 30 cm,75,"Turron de chocolate con pecanas, cubierto con fudge casero de Patty.",48 horas,Si
+B2C-003,Postres enteros,Tortas,Torta de chocolate clásica,Unico,6 porciones,26 cm de diametro,95,Bizcocho de chocolate banado con fudge de Patty y virutas de chocolate.,48 horas,Si
+B2C-004,Postres enteros,Tortas,Torta de chocolate con manjar,Unico,6 porciones,26 cm de diametro,95,"Bizcocho de chocolate relleno de manjar, banado con fudge y virutas de chocolate.",48 horas,Si
+B2C-005,Postres enteros,Tortas,Torta de zanahoria clásica,Unico,6 porciones,26 cm de diametro,95,"Bizcocho de zanahoria con frosting de queso crema y canela, y pecanas picadas.",48 horas,Si
+B2C-006,Postres enteros,Tortas,Torta de chocolate,Mediana,8 porciones,20 cm de diametro,82,"Bizcocho de chocolate con fudge, virutas, trufas y frutos rojos.",48 horas,Si
+B2C-007,Postres enteros,Tortas,Torta de chocolate,Grande,12 porciones,26 cm de diametro,105,"Bizcocho de chocolate con fudge, virutas, trufas y frutos rojos.",48 horas,Si
+B2C-008,Postres enteros,Tortas,Torta de zanahoria,Mediana,8 porciones,20 cm de diametro,82,"Bizcocho de zanahoria con frosting de canela, pecanas, canelitas y berries.",48 horas,Si
+B2C-009,Postres enteros,Tortas,Torta de zanahoria,Grande,12 porciones,26 cm de diametro,105,"Bizcocho de zanahoria con frosting de canela, pecanas, canelitas y berries.",48 horas,Si
+B2C-010,Postres enteros,Tortas,Torta de pera,Mediana,8 porciones,20 cm de diametro,90,"Bizcocho de pera con frosting, crumble, butterscotch y berries.",48 horas,Si
+B2C-011,Postres enteros,Tortas,Torta de pera,Grande,12 porciones,26 cm de diametro,115,"Bizcocho de pera con frosting, crumble, butterscotch y berries.",48 horas,Si
+B2C-012,Postres enteros,Tortas,Torta de chocolucuma,Mediana,8 porciones,20 cm de diametro,82,"Bizcocho de chocolate relleno de mousse de lucuma, con trufas y berries.",48 horas,Si
+B2C-013,Postres enteros,Tortas,Torta de chocolucuma,Grande,12 porciones,26 cm de diametro,105,"Bizcocho de chocolate relleno de mousse de lucuma, con trufas y berries.",48 horas,Si
+B2C-014,Postres enteros,Tortas,Torta red velvet,Mediana,8 porciones,20 cm de diametro,82,"Bizcocho relleno de manjar y cubierto de frosting, con trufas y berries.",48 horas,Si
+B2C-015,Postres enteros,Tortas,Torta red velvet,Grande,12 porciones,26 cm de diametro,105,"Bizcocho relleno de manjar y cubierto de frosting, con trufas y berries.",48 horas,Si
+B2C-016,Postres enteros,Tortas,Torta de chocopistacho,Mediana,8 porciones,20 cm de diametro,120,"Bizcocho de chocolate con crema y manjar de pistacho, decorado con trufas de pistacho.",48 horas,Si
+B2C-017,Postres enteros,Tortas,Torta de chocopistacho,Grande,12 porciones,26 cm de diametro,149,"Bizcocho de chocolate con crema y manjar de pistacho, decorado con trufas de pistacho.",48 horas,Si
+B2C-018,Postres enteros,Tortas,Mini torta de chocolate,Unico,4 porciones,10 cm de diametro,52,"Bizcocho de chocolate con fudge, virutas, trufas y frutos rojos.",48 horas,Si
+B2C-019,Postres enteros,Tortas,Mini torta de zanahoria,Unico,4 porciones,10 cm de diametro,52,"Bizcocho de zanahoria con frosting de canela, pecanas, canelitas y aguaymantos.",48 horas,Si
+B2C-020,Postres enteros,Tortas,Mini torta de chocolucuma,Unico,4 porciones,10 cm de diametro,52,Bizcocho de chocolate relleno de mousse de lucuma y decorado con trufas.,48 horas,Si
+B2C-021,Postres enteros,Cheesecakes y pies,Cheesecake de Toblerone,Unico,10 porciones,22 cm de diametro,129,Cheesecake horneado de chocolate con crema de avellanas y praline.,48 horas,Si
+B2C-022,Postres enteros,Cheesecakes y pies,Pie de limon,Unico,10 porciones,22 cm de diametro,95,"Pie de limon cremoso con merengue, limones confitados y moras.",48 horas,Si
+B2C-023,Postres enteros,Cheesecakes y pies,Pie de manzana,Unico,8 porciones,20 cm de diametro,90,Pie relleno con compota de manzana.,48 horas,Si
+B2C-024,Postres enteros,Cheesecakes y pies,Crocante de manzana,Unico,8 porciones,20 cm de diametro,95,Crocante de manzana con crumble y pecanas.,48 horas,Si
+B2C-025,Postres enteros,Cheesecakes y pies,Cheesecake de frutos rojos,Unico,10 porciones,22 cm de diametro,129,"Cheesecake horneado de vainilla con base de galleta, frutos y coulis de frutos rojos.",48 horas,Si
+B2C-026,Postres enteros,Cheesecakes y pies,Pie de pecanas,Unico,8 porciones,20 cm de diametro,95,Pie clasico de pecanas con miel de maple.,48 horas,Si
+B2C-027,Postres enteros,Postres de leche,Tres leches de pistacho,Unico,8 porciones,22 cm de diametro,129,Con mousse de pistacho y frambuesas.,48 horas,Si
+B2C-028,Postres enteros,Postres de leche,Tres leches de fresa,Unico,8 porciones,22 cm de diametro,95,"Relleno de fresas, crema de vainilla y manjar.",48 horas,Si
+B2C-029,Postres enteros,Postres de leche,Souffle de mango,Unico,8 porciones,22 cm de diametro,99,"Relleno de manjar, crema chantilly y mango.",48 horas,Si
+B2C-030,Postres enteros,Postres de leche,Souffle de fresa,Unico,8 porciones,22 cm de diametro,99,"Relleno de manjar, crema chantilly y fresas.",48 horas,Si
+B2C-031,Postres enteros,Postres de leche,Tres leches de lucuma,Unico,8 porciones,22 cm de diametro,99,Relleno con mousse de lucuma y frutos rojos.,48 horas,Si
+B2C-032,Postres enteros,Postres de leche,Crema volteada,Unico,8 porciones,22 cm de diametro,99,Crema volteada clasica con caramelo.,48 horas,Si
+B2C-033,Postres enteros,Piononos,Pionono clásico,Unico,10 porciones,30 x 10 cm,89,Bizcocho de vainilla relleno de manjarblanco.,48 horas,Si
+B2C-034,Postres enteros,Piononos,Pionono de maracumango,Unico,10 porciones,30 x 10 cm,99,Bizcocho de vainilla relleno de crema de maracumango y decorado con merengue italiano.,48 horas,Si
+B2C-035,Postres enteros,Piononos,Pionono de pistacho y frambuesa,Unico,10 porciones,30 x 10 cm,99,Bizcocho de vainilla relleno de crema de frambuesa y decorado con crema de pistacho.,48 horas,Si
+B2C-036,Postres enteros,Piononos,Pionono de chirimoya,Unico,10 porciones,30 x 10 cm,99,Bizcocho de vainilla relleno de manjar de chirimoya y decorado con merengue italiano.,48 horas,Si
+B2C-037,Postres enteros,Crocantes,Crocante de chirimoya,Chica,6 porciones,19 x 15 cm,69,Postre cremoso de chirimoya con base crocante.,48 horas,Si
+B2C-038,Postres enteros,Crocantes,Crocante de chirimoya,Grande,12 porciones,19 x 30 cm,129,Postre cremoso de chirimoya con base crocante.,48 horas,Si
+B2C-039,Postres enteros,Crocantes,Crocante de maracumango,Chica,6 porciones,19 x 15 cm,69,Postre cremoso de maracumango con base crocante.,48 horas,Si
+B2C-040,Postres enteros,Crocantes,Crocante de maracumango,Grande,12 porciones,19 x 30 cm,129,Postre cremoso de maracumango con base crocante.,48 horas,Si
+B2C-041,Postres enteros,Crocantes,Crocante de pistacho y frambuesa,Chica,6 porciones,19 x 15 cm,79,Postre cremoso de pistacho y frambuesa con base crocante.,48 horas,Si
+B2C-042,Postres enteros,Crocantes,Crocante de pistacho y frambuesa,Grande,12 porciones,19 x 30 cm,139,Postre cremoso de pistacho y frambuesa con base crocante.,48 horas,Si
+B2C-043,Postres enteros,Crocantes,Crocante de lúcuma,Chica,6 porciones,19 x 15 cm,69,Postre cremoso de lúcuma con base crocante.,48 horas,Si
+B2C-044,Postres enteros,Crocantes,Crocante de lúcuma,Grande,12 porciones,19 x 30 cm,129,Postre cremoso de lúcuma con base crocante.,48 horas,Si
+B2C-045,Postres enteros,Dubai,Alfajor Dubai XL de pistacho,Unico,12 porciones,26 cm de diametro,149,"Alfajor XL relleno con pasta artesanal de pistacho y kataifi, banado en chocolate.",48 horas,Si
+B2C-046,Postres enteros,Dubai,Alfajor Dubai XL de avellanas,Unico,12 porciones,26 cm de diametro,149,"Alfajor XL relleno con pasta artesanal de avellanas y kataifi, banado en chocolate.",48 horas,Si
+B2C-047,Postres enteros,Dubai,Brownie Dubai XL de pistacho,Unico,12 porciones,26 cm de diametro,159,"Brownie XL relleno con pasta artesanal de pistacho y kataifi, banado en chocolate.",48 horas,Si
+B2C-048,Postres enteros,Dubai,Brownie Dubai XL de avellanas,Unico,12 porciones,26 cm de diametro,159,"Brownie XL relleno con pasta artesanal de avellanas y kataifi, banado en chocolate.",48 horas,Si
+B2C-049,Postres enteros,Quiches,Quiche de poro y tocina,Unico,8 porciones,22 cm de diametro,89,Quiche horneado en masa crocante con relleno de poro y tocino,48 horas,Si
+B2C-050,Postres enteros,Quiches,Quiche de queso y cebolla,Unico,8 porciones,22 cm de diametro,89,Quiche horneado en masa crocante con relleno de queso y cebolla,48 horas,Si
+B2C-051,Postres enteros,Quiches,Quice de caprese,Unico,8 porciones,22 cm de diametro,89,Quiche horneado en masa crocante con relleno tipo caprese,48 horas,Si
+B2C-052,Postres enteros,Packs,Jar brownies y blondies,Unico,200 g,,25,Frasco para compartir con brownies y blondies.,48 horas,Si
+B2C-053,Postres enteros,Packs,Jar galletas chocochips y toffee,Unico,200 g,,25,Frasco para compartir con galletas de chocochip y toffee.,48 horas,Si
+B2C-054,Postres enteros,Packs,"Caja de dulcecitos (canelitas, trufas y alfajor)",Unico,24 unidades,,55,Caja surtida de dulcecitos para compartir o regalar.,48 horas,Si
+B2C-055,Postres enteros,Packs,"Caja de dulcecitos (canelitas, trufas y brownie)",Unico,26 unidades,,55,Caja surtida de dulcecitos para compartir o regalar.,48 horas,Si
+B2C-056,Postres enteros,Packs,Caja de dulcecitos (trufas y canelitas),Unico,24 unidades,,55,Caja surtida de dulcecitos para compartir o regalar.,48 horas,Si
+B2C-057,Postres enteros,Packs,Caja de mini alfajorcitos,Unico,20 unidades,,45,"Caja de mini alfajorcitos clásicos, ideal para compartir.",48 horas,Si
+B2C-058,Postres enteros,Packs,Caja de mini brownies y blondies,Unico,12 unidades,,35,Caja surtida de mini brownies y blondies.,48 horas,Si
+B2C-059,Postres enteros,Packs,Caja de mini galletas chocochip,Unico,9 unidades,,35,Caja de mini galletas de chocochip.,48 horas,Si
+B2C-060,Postres enteros,Packs,"Caja de trufas mixtas (pecanas, chocolate, pistacho y canelitas)",Unico,12 unidades,,39,"Caja surtida de trufas de pecanas, chocolate, pistacho y canelitas.",48 horas,Si
+B2C-061,Dulcecitos,Bocaditos clasicos,Mini alfajorcitos banados en chocolate,Unico,20 unidades,,65,"Mini alfajorcitos bañados en chocolate, ideales para una mesa dulce.",48 horas,Si
+B2C-062,Dulcecitos,Bocaditos clasicos,Mini alfajorcitos banados en chocolate,Unico,50 unidades,,120,"Mini alfajorcitos bañados en chocolate, ideales para una mesa dulce.",48 horas,Si
+B2C-063,Dulcecitos,Bocaditos clasicos,Mini alfajorcitos banados en chocolate,Unico,100 unidades,,200,"Mini alfajorcitos bañados en chocolate, ideales para una mesa dulce.",48 horas,Si
+B2C-064,Dulcecitos,Bocaditos clasicos,Trufas de pistacho,Unico,25 unidades,,65,Trufas de chocolate con sabor a pistacho.,48 horas,Si
+B2C-065,Dulcecitos,Bocaditos clasicos,Trufas de pistacho,Unico,50 unidades,,120,Trufas de chocolate con sabor a pistacho.,48 horas,Si
+B2C-066,Dulcecitos,Bocaditos clasicos,Trufas de pistacho,Unico,100 unidades,,200,Trufas de chocolate con sabor a pistacho.,48 horas,Si
+B2C-067,Dulcecitos,Bocaditos clasicos,Bolitas de manjar con pecana,Unico,25 unidades,,55,"Bolitas de manjar con pecana, un dulcecito clásico.",48 horas,Si
+B2C-068,Dulcecitos,Bocaditos clasicos,Bolitas de manjar con pecana,Unico,50 unidades,,100,"Bolitas de manjar con pecana, un dulcecito clásico.",48 horas,Si
+B2C-069,Dulcecitos,Bocaditos clasicos,Bolitas de manjar con pecana,Unico,100 unidades,,160,"Bolitas de manjar con pecana, un dulcecito clásico.",48 horas,Si
+B2C-070,Dulcecitos,Bocaditos clasicos,Mini alfajorcitos clasicos,Unico,20 unidades,,45,Mini alfajorcitos clásicos rellenos de manjar.,48 horas,Si
+B2C-071,Dulcecitos,Bocaditos clasicos,Mini alfajorcitos clasicos,Unico,50 unidades,,90,Mini alfajorcitos clásicos rellenos de manjar.,48 horas,Si
+B2C-072,Dulcecitos,Bocaditos clasicos,Mini alfajorcitos clasicos,Unico,100 unidades,,150,Mini alfajorcitos clásicos rellenos de manjar.,48 horas,Si
+B2C-073,Dulcecitos,Bocaditos clasicos,Mini brownie o blondie banado en chocolate,Unico,25 unidades,,55,Mini brownie o blondie bañado en chocolate.,48 horas,Si
+B2C-074,Dulcecitos,Bocaditos clasicos,Mini brownie o blondie banado en chocolate,Unico,50 unidades,,100,Mini brownie o blondie bañado en chocolate.,48 horas,Si
+B2C-075,Dulcecitos,Bocaditos clasicos,Mini brownie o blondie banado en chocolate,Unico,100 unidades,,160,Mini brownie o blondie bañado en chocolate.,48 horas,Si
+B2C-076,Dulcecitos,Bocaditos clasicos,Canelitas,Unico,25 unidades,,55,Dulcecito de manjar decorado con canela.,48 horas,Si
+B2C-077,Dulcecitos,Bocaditos clasicos,Canelitas,Unico,50 unidades,,100,Dulcecito de manjar decorado con canela.,48 horas,Si
+B2C-078,Dulcecitos,Bocaditos clasicos,Canelitas,Unico,100 unidades,,160,Dulcecito de manjar decorado con canela.,48 horas,Si
+B2C-079,Dulcecitos,Bocaditos clasicos,Mini brownie o blondie,Unico,25 unidades,,55,Mini brownie o blondie para compartir.,48 horas,Si
+B2C-080,Dulcecitos,Bocaditos clasicos,Mini brownie o blondie,Unico,50 unidades,,100,Mini brownie o blondie para compartir.,48 horas,Si
+B2C-081,Dulcecitos,Bocaditos clasicos,Mini brownie o blondie,Unico,100 unidades,,160,Mini brownie o blondie para compartir.,48 horas,Si
+B2C-082,Dulcecitos,Bocaditos clasicos,Trufas de chocolate crocante,Unico,25 unidades,,55,Trufas de chocolate con textura crocante.,48 horas,Si
+B2C-083,Dulcecitos,Bocaditos clasicos,Trufas de chocolate crocante,Unico,50 unidades,,100,Trufas de chocolate con textura crocante.,48 horas,Si
+B2C-084,Dulcecitos,Bocaditos clasicos,Trufas de chocolate crocante,Unico,100 unidades,,160,Trufas de chocolate con textura crocante.,48 horas,Si
+B2C-085,Dulcecitos,Bocaditos clasicos,Trufas de chocolate,Unico,25 unidades,,55,"Trufas de chocolate, ideales para una mesa dulce.",48 horas,Si
+B2C-086,Dulcecitos,Bocaditos clasicos,Trufas de chocolate,Unico,50 unidades,,100,"Trufas de chocolate, ideales para una mesa dulce.",48 horas,Si
+B2C-087,Dulcecitos,Bocaditos clasicos,Trufas de chocolate,Unico,100 unidades,,160,"Trufas de chocolate, ideales para una mesa dulce.",48 horas,Si
+B2C-088,Dulcecitos,Bocaditos clasicos,Mini galletas de chocochip,Unico,25 unidades,,65,Mini galletas de chocochip para compartir.,48 horas,Si
+B2C-089,Dulcecitos,Bocaditos clasicos,Mini galletas de chocochip,Unico,50 unidades,,120,Mini galletas de chocochip para compartir.,48 horas,Si
+B2C-090,Dulcecitos,Bocaditos clasicos,Mini galletas de chocochip,Unico,100 unidades,,200,Mini galletas de chocochip para compartir.,48 horas,Si
+B2C-091,Dulcecitos,Bocaditos clasicos,Mini pie de limón,Unico,24 unidades,,90,Mini pie de limón con sabor cítrico y merengue.,48 horas,Si
+B2C-092,Dulcecitos,Bocaditos clasicos,Mini pie de limón,Unico,48 unidades,,160,Mini pie de limón con sabor cítrico y merengue.,48 horas,Si
+B2C-093,Dulcecitos,Bocaditos clasicos,Mini pie de limón,Unico,96 unidades,,290,Mini pie de limón con sabor cítrico y merengue.,48 horas,Si
+B2C-094,Dulcecitos,Bocaditos clasicos,Mini pie de maracuyá,Unico,24 unidades,,90,Mini pie de maracuyá con sabor tropical y merengue.,48 horas,Si
+B2C-095,Dulcecitos,Bocaditos clasicos,Mini pie de maracuyá,Unico,48 unidades,,160,Mini pie de maracuyá con sabor tropical y merengue.,48 horas,Si
+B2C-096,Dulcecitos,Bocaditos clasicos,Mini pie de maracuyá,Unico,96 unidades,,290,Mini pie de maracuyá con sabor tropical y merengue.,48 horas,Si
+B2C-097,Dulcecitos,Bocaditos clasicos,Mini galletas de toffee,Unico,25 unidades,,65,Mini galletas de toffee para compartir.,48 horas,Si
+B2C-098,Dulcecitos,Bocaditos clasicos,Mini galletas de toffee,Unico,50 unidades,,120,Mini galletas de toffee para compartir.,48 horas,Si
+B2C-099,Dulcecitos,Bocaditos clasicos,Mini galletas de toffee,Unico,100 unidades,,200,Mini galletas de toffee para compartir.,48 horas,Si
+B2C-100,Dulcecitos,Bocaditos clasicos,Bolitas de manjar con lucuma,Unico,25 unidades,,55,"Bolitas de manjar con lúcuma, un dulcecito clásico.",48 horas,Si
+B2C-101,Dulcecitos,Bocaditos clasicos,Bolitas de manjar con lucuma,Unico,50 unidades,,100,"Bolitas de manjar con lúcuma, un dulcecito clásico.",48 horas,Si
+B2C-102,Dulcecitos,Bocaditos clasicos,Bolitas de manjar con lucuma,Unico,100 unidades,,160,"Bolitas de manjar con lúcuma, un dulcecito clásico.",48 horas,Si
+B2C-103,Dulcecitos,Bocaditos clasicos,Mini turron de chocolate,Unico,25 unidades,,55,Mini turrón de chocolate para compartir.,48 horas,Si
+B2C-104,Dulcecitos,Bocaditos clasicos,Mini turron de chocolate,Unico,50 unidades,,100,Mini turrón de chocolate para compartir.,48 horas,Si
+B2C-105,Dulcecitos,Bocaditos clasicos,Mini turron de chocolate,Unico,100 unidades,,160,Mini turrón de chocolate para compartir.,48 horas,Si
+B2C-106,Dulcecitos,Bocaditos clasicos,Mini cheesecake new york,Unico,24 unidades,,90,Mini cheesecake estilo New York con base de galleta.,48 horas,Si
+B2C-107,Dulcecitos,Bocaditos clasicos,Mini cheesecake new york,Unico,48 unidades,,160,Mini cheesecake estilo New York con base de galleta.,48 horas,Si
+B2C-108,Dulcecitos,Bocaditos clasicos,Mini cheesecake new york,Unico,96 unidades,,290,Mini cheesecake estilo New York con base de galleta.,48 horas,Si
+B2C-109,Dulcecitos,Bocaditos clasicos,Mini cheesecake de oreo,Unico,24 unidades,,90,Mini cheesecake cremoso con sabor a Oreo.,48 horas,Si
+B2C-110,Dulcecitos,Bocaditos clasicos,Mini cheesecake de oreo,Unico,48 unidades,,160,Mini cheesecake cremoso con sabor a Oreo.,48 horas,Si
+B2C-111,Dulcecitos,Bocaditos clasicos,Mini cheesecake de oreo,Unico,96 unidades,,290,Mini cheesecake cremoso con sabor a Oreo.,48 horas,Si
+B2C-112,Dulcecitos,Bocaditos clasicos,Mini cheesecake de avellanas,Unico,24 unidades,,90,Mini cheesecake cremoso con sabor a crema de avellanas.,48 horas,Si
+B2C-113,Dulcecitos,Bocaditos clasicos,Mini cheesecake de avellanas,Unico,48 unidades,,160,Mini cheesecake cremoso con sabor a crema de avellanas.,48 horas,Si
+B2C-114,Dulcecitos,Bocaditos clasicos,Mini cheesecake de avellanas,Unico,96 unidades,,290,Mini cheesecake cremoso con sabor a crema de avellanas.,48 horas,Si
+B2C-115,Dulcecitos,Bocaditos clasicos,Mini cheesecake de crème brule,Unico,24 unidades,,90,Mini cheesecake cremoso inspirado en crème brûlée.,48 horas,Si
+B2C-116,Dulcecitos,Bocaditos clasicos,Mini cheesecake de crème brule,Unico,48 unidades,,160,Mini cheesecake cremoso inspirado en crème brûlée.,48 horas,Si
+B2C-117,Dulcecitos,Bocaditos clasicos,Mini cheesecake de crème brule,Unico,96 unidades,,290,Mini cheesecake cremoso inspirado en crème brûlée.,48 horas,Si
+B2C-118,Dulcecitos,Bocaditos clasicos,Maná,Unico,25 unidades,,55,Dulcecito de maní para compartir.,48 horas,Si
+B2C-119,Dulcecitos,Bocaditos clasicos,Maná,Unico,50 unidades,,100,Dulcecito de maní para compartir.,48 horas,Si
+B2C-120,Dulcecitos,Bocaditos clasicos,Maná,Unico,100 unidades,,160,Dulcecito de maní para compartir.,48 horas,Si
+B2C-121,Dulcecitos,Mini shots,Tres leches clasico,Unico,24 unidades,Shot de 3 oz,75,Mini shot de tres leches clásico.,48 horas,Si
+B2C-122,Dulcecitos,Mini shots,Tres leches clasico,Unico,48 unidades,Shot de 3 oz,140,Mini shot de tres leches clásico.,48 horas,Si
+B2C-123,Dulcecitos,Mini shots,Tres leches clasico,Unico,96 unidades,Shot de 3 oz,250,Mini shot de tres leches clásico.,48 horas,Si
+B2C-124,Dulcecitos,Mini shots,Arroz con leche,Unico,24 unidades,Shot de 3 oz,75,Mini shot de arroz con leche cremoso.,48 horas,Si
+B2C-125,Dulcecitos,Mini shots,Arroz con leche,Unico,48 unidades,Shot de 3 oz,140,Mini shot de arroz con leche cremoso.,48 horas,Si
+B2C-126,Dulcecitos,Mini shots,Arroz con leche,Unico,96 unidades,Shot de 3 oz,250,Mini shot de arroz con leche cremoso.,48 horas,Si
+B2C-127,Dulcecitos,Mini shots,Tres leches de pistacho,Unico,24 unidades,Shot de 3 oz,90,Mini shot de tres leches con sabor a istacho.,48 horas,Si
+B2C-128,Dulcecitos,Mini shots,Tres leches de pistacho,Unico,48 unidades,Shot de 3 oz,160,Mini shot de tres leches con sabor a istacho.,48 horas,Si
+B2C-129,Dulcecitos,Mini shots,Tres leches de pistacho,Unico,96 unidades,Shot de 3 oz,290,Mini shot de tres leches con sabor a istacho.,48 horas,Si
+B2C-130,Dulcecitos,Mini shots,Tres leches de lúcuma,Unico,24 unidades,Shot de 3 oz,90,Mini shot de tres leches con sabor a úcuma.,48 horas,Si
+B2C-131,Dulcecitos,Mini shots,Tres leches de lúcuma,Unico,48 unidades,Shot de 3 oz,160,Mini shot de tres leches con sabor a úcuma.,48 horas,Si
+B2C-132,Dulcecitos,Mini shots,Tres leches de lúcuma,Unico,96 unidades,Shot de 3 oz,290,Mini shot de tres leches con sabor a úcuma.,48 horas,Si
+B2C-133,Dulcecitos,Mini shots,Tres leches de fresa,Unico,24 unidades,Shot de 3 oz,90,Mini shot de tres leches con sabor a resa.,48 horas,Si
+B2C-134,Dulcecitos,Mini shots,Tres leches de fresa,Unico,48 unidades,Shot de 3 oz,160,Mini shot de tres leches con sabor a resa.,48 horas,Si
+B2C-135,Dulcecitos,Mini shots,Tres leches de fresa,Unico,96 unidades,Shot de 3 oz,290,Mini shot de tres leches con sabor a resa.,48 horas,Si
+B2C-136,Dulcecitos,Mini shots,Suspiro clásico,Unico,24 unidades,Shot de 3 oz,90,Mini shot de suspiro clásico.,48 horas,Si
+B2C-137,Dulcecitos,Mini shots,Suspiro clásico,Unico,48 unidades,Shot de 3 oz,160,Mini shot de suspiro clásico.,48 horas,Si
+B2C-138,Dulcecitos,Mini shots,Suspiro clásico,Unico,96 unidades,Shot de 3 oz,290,Mini shot de suspiro clásico.,48 horas,Si
+B2C-139,Dulcecitos,Mini shots,Suspiro de chirimoya,Unico,24 unidades,Shot de 3 oz,90,Mini shot de suspiro de chirimoya.,48 horas,Si
+B2C-140,Dulcecitos,Mini shots,Suspiro de chirimoya,Unico,48 unidades,Shot de 3 oz,160,Mini shot de suspiro de chirimoya.,48 horas,Si
+B2C-141,Dulcecitos,Mini shots,Suspiro de chirimoya,Unico,96 unidades,Shot de 3 oz,290,Mini shot de suspiro de chirimoya.,48 horas,Si
+B2C-142,Dulcecitos,Mini shots,Suspiro de lúcuma,Unico,24 unidades,Shot de 3 oz,90,Mini shot de suspiro de lúcuma.,48 horas,Si
+B2C-143,Dulcecitos,Mini shots,Suspiro de lúcuma,Unico,48 unidades,Shot de 3 oz,160,Mini shot de suspiro de lúcuma.,48 horas,Si
+B2C-144,Dulcecitos,Mini shots,Suspiro de lúcuma,Unico,96 unidades,Shot de 3 oz,290,Mini shot de suspiro de lúcuma.,48 horas,Si
+B2C-145,Dulcecitos,Mini shots,Mousse de fresa,Unico,24 unidades,Shot de 3 oz,75,Mini shot de mousse de fresa.,48 horas,Si
+B2C-146,Dulcecitos,Mini shots,Mousse de fresa,Unico,48 unidades,Shot de 3 oz,140,Mini shot de mousse de fresa.,48 horas,Si
+B2C-147,Dulcecitos,Mini shots,Mousse de fresa,Unico,96 unidades,Shot de 3 oz,250,Mini shot de mousse de fresa.,48 horas,Si
+B2C-148,Dulcecitos,Mini shots,Mousse de lúcuma,Unico,24 unidades,Shot de 3 oz,75,Mini shot de mousse de lúcuma.,48 horas,Si
+B2C-149,Dulcecitos,Mini shots,Mousse de lúcuma,Unico,48 unidades,Shot de 3 oz,140,Mini shot de mousse de lúcuma.,48 horas,Si
+B2C-150,Dulcecitos,Mini shots,Mousse de lúcuma,Unico,96 unidades,Shot de 3 oz,250,Mini shot de mousse de lúcuma.,48 horas,Si
+B2C-151,Dulcecitos,Mini shots,Mousse de chocolate,Unico,24 unidades,Shot de 3 oz,75,Mini shot de mousse de chocolate.,48 horas,Si
+B2C-152,Dulcecitos,Mini shots,Mousse de chocolate,Unico,48 unidades,Shot de 3 oz,140,Mini shot de mousse de chocolate.,48 horas,Si
+B2C-153,Dulcecitos,Mini shots,Mousse de chocolate,Unico,96 unidades,Shot de 3 oz,250,Mini shot de mousse de chocolate.,48 horas,Si
+B2C-154,Dulcecitos,Mini shots,Crocante de chirimoya,Unico,24 unidades,Shot de 3 oz,90,Postre cremoso de chirimoya con base crocante.,48 horas,Si
+B2C-155,Dulcecitos,Mini shots,Crocante de chirimoya,Unico,48 unidades,Shot de 3 oz,160,Postre cremoso de chirimoya con base crocante.,48 horas,Si
+B2C-156,Dulcecitos,Mini shots,Crocante de chirimoya,Unico,96 unidades,Shot de 3 oz,290,Postre cremoso de chirimoya con base crocante.,48 horas,Si
+B2C-157,Dulcecitos,Mini shots,Crocante de frutos rojos,Unico,24 unidades,Shot de 3 oz,90,Postre cremoso de frutos rojos con base crocante.,48 horas,Si
+B2C-158,Dulcecitos,Mini shots,Crocante de frutos rojos,Unico,48 unidades,Shot de 3 oz,160,Postre cremoso de frutos rojos con base crocante.,48 horas,Si
+B2C-159,Dulcecitos,Mini shots,Crocante de frutos rojos,Unico,96 unidades,Shot de 3 oz,290,Postre cremoso de frutos rojos con base crocante.,48 horas,Si
+B2C-160,Dulcecitos,Mini shots,Crocante de maracumango,Unico,24 unidades,Shot de 3 oz,90,Postre cremoso de maracumango con base crocante.,48 horas,Si
+B2C-161,Dulcecitos,Mini shots,Crocante de maracumango,Unico,48 unidades,Shot de 3 oz,160,Postre cremoso de maracumango con base crocante.,48 horas,Si
+B2C-162,Dulcecitos,Mini shots,Crocante de maracumango,Unico,96 unidades,Shot de 3 oz,290,Postre cremoso de maracumango con base crocante.,48 horas,Si
+B2C-163,Dulcecitos,Mini shots,Crocante de lúcuma,Unico,24 unidades,Shot de 3 oz,90,Postre cremoso de lúcuma con base crocante.,48 horas,Si
+B2C-164,Dulcecitos,Mini shots,Crocante de lúcuma,Unico,48 unidades,Shot de 3 oz,160,Postre cremoso de lúcuma con base crocante.,48 horas,Si
+B2C-165,Dulcecitos,Mini shots,Crocante de lúcuma,Unico,96 unidades,Shot de 3 oz,290,Postre cremoso de lúcuma con base crocante.,48 horas,Si
+B2C-166,Dulcecitos,Personalizados,Galletas decoradas,Unico,6 unidades,,40,Galletas decoradas para eventos; incluye personalización básica.,48 horas,Si
+B2C-167,Dulcecitos,Personalizados,Galletas decoradas,Unico,12 unidades,,70,Galletas decoradas para eventos; incluye personalización básica.,48 horas,Si
+B2C-168,Dulcecitos,Personalizados,Galletas decoradas,Unico,24 unidades,,130,Galletas decoradas para eventos; incluye personalización básica.,48 horas,Si
+B2C-169,Dulcecitos,Personalizados,Cake pops,Unico,6 unidades,,40,Cake pops para eventos; incluye personalización básica.,48 horas,Si
+B2C-170,Dulcecitos,Personalizados,Cake pops,Unico,12 unidades,,70,Cake pops para eventos; incluye personalización básica.,48 horas,Si
+B2C-171,Dulcecitos,Personalizados,Cake pops,Unico,24 unidades,,130,Cake pops para eventos; incluye personalización básica.,48 horas,Si
+B2C-172,Dulcecitos,Personalizados,Cupcakes,Unico,6 unidades,,50,Cupcakes para eventos; incluye personalización básica.,48 horas,Si
+B2C-173,Dulcecitos,Personalizados,Cupcakes,Unico,12 unidades,,90,Cupcakes para eventos; incluye personalización básica.,48 horas,Si
+B2C-174,Dulcecitos,Personalizados,Cupcakes,Unico,24 unidades,,170,Cupcakes para eventos; incluye personalización básica.,48 horas,Si
+B2C-175,Dulcecitos,Personalizados,Mini cupcakes,Unico,24 unidades,,100,Mini cupcakes para eventos; incluye personalización básica.,48 horas,Si
+B2C-176,Dulcecitos,Personalizados,Mini cupcakes,Unico,48 unidades,,190,Mini cupcakes para eventos; incluye personalización básica.,48 horas,Si
+B2C-177,Dulcecitos,Personalizados,Mini cupcakes,Unico,72 unidades,,280,Mini cupcakes para eventos; incluye personalización básica.,48 horas,Si

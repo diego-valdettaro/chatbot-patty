@@ -15,6 +15,8 @@ PICKUP_STORES = ("Benavides", "San Isidro")
 
 # Resolve data paths from the repository instead of the process working directory.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+CATALOG_PATH = PROJECT_ROOT / "data" / "catalogo_b2c_completo_utf8.csv"
+# The sample remains available for legacy unit tests and local fixtures.
 CATALOG_SAMPLE_PATH = PROJECT_ROOT / "data" / "catalog.sample.csv"
 DATABASE_PATH = PROJECT_ROOT / "data" / "patty.sqlite3"
 DOTENV_PATH = PROJECT_ROOT / ".env"

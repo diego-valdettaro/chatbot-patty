@@ -2,6 +2,7 @@ from typing import Iterable, Mapping
 
 from patty_bot.domain.catalog import CatalogMatch, Product, search_products
 from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
+from patty_bot.tools.product_serialization import serialize_product
 
 
 def search_catalog(
@@ -36,12 +37,7 @@ def _serialize_match(match: CatalogMatch) -> dict[str, JsonValue]:
     # Decimal prices cross the tool boundary as strings to preserve exact currency values.
     product = match.product
     return {
-        "product": {
-            "id": product.id,
-            "name": product.name,
-            "category": product.category,
-            "price": f"{product.price:.2f}",
-        },
+        "product": serialize_product(product),
         "match_type": match.match_type,
         "score": match.score,
     }
