@@ -1,6 +1,7 @@
 """Tests for the application boundary around the conversational agent."""
 
 import logging
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -15,7 +16,7 @@ from patty_bot.application.conversation_state import (
 )
 from patty_bot.infrastructure.conversation_repository import ConversationRepository, SQLiteConversationRepository
 from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings
-from patty_bot.application.conversation_service import HUMAN_HANDOFF_REPLY, ConversationService
+from patty_bot.application.conversation_service import HUMAN_HANDOFF_REPLY, SAFE_PROVIDER_REPLY, ConversationService
 
 
 SETTINGS = LLMSettings(
@@ -278,3 +279,29 @@ def test_persistence_errors_are_logged_and_translated_to_the_safe_reply(caplog) 
     assert turn.reply == "No pude responder en este momento. Intenta nuevamente en unos instantes."
     assert "conversation persistence error [conversation_id=conversation-1 stage=load_conversation error_type=OSError]" in caplog.text
     assert "mensaje privado" not in caplog.text
+
+
+def test_corrupt_persisted_state_returns_a_safe_reply_without_replacing_the_row(tmp_path, caplog) -> None:
+    database_path = tmp_path / "corrupt-conversation.sqlite3"
+    repository = SQLiteConversationRepository(database_path)
+    repository.save(ConversationState(conversation_id="conversation-1"))
+    with sqlite3.connect(database_path) as connection:
+        connection.execute(
+            "UPDATE conversations SET messages_json = ? WHERE conversation_id = ?",
+            ("{not customer data", "conversation-1"),
+        )
+    conversation_service = ConversationService(
+        load_catalog(Path("data/catalog.sample.csv")), database_path, repository
+    )
+    caplog.set_level(logging.ERROR, logger="patty_bot.application.conversation_service")
+
+    turn = conversation_service.handle_message("conversation-1", "Ana Perez, +34 600 123 456")
+
+    assert turn.reply == SAFE_PROVIDER_REPLY
+    assert "ConversationStateCorruptionError" in caplog.text
+    assert "Ana Perez" not in caplog.text
+    assert "+34 600 123 456" not in caplog.text
+    with sqlite3.connect(database_path) as connection:
+        assert connection.execute(
+            "SELECT messages_json FROM conversations WHERE conversation_id = ?", ("conversation-1",)
+        ).fetchone()[0] == "{not customer data"

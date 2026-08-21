@@ -6,6 +6,7 @@ from pathlib import Path
 from patty_bot.domain.catalog import load_catalog
 from patty_bot.tools.order_tools import OrderConfirmationToolExecution
 from patty_bot.domain.orders import OrderDetails, create_confirmed_order
+from patty_bot.agent import tool_executor
 from patty_bot.agent.tool_executor import AgentSession, execute_tool_call
 from patty_bot.agent.tool_contracts import ToolCall, tool_success
 
@@ -126,3 +127,25 @@ def test_executor_keeps_confirmed_order_server_side_and_locks_later_calls(monkey
     assert confirmed.result.to_dict()["data"] == {"confirmed": True}
     assert later_call.session is confirmed.session
     assert later_call.result.to_dict()["errors"][0]["code"] == "order_already_confirmed"
+
+
+def test_executor_translates_unexpected_tool_failures_and_preserves_the_session(monkeypatch) -> None:
+    original = session()
+
+    def failing_handler(*_args, **_kwargs):
+        raise RuntimeError("database password and customer address")
+
+    monkeypatch.setitem(tool_executor._TOOL_HANDLERS, "get_cart", failing_handler)
+    execution = execute_tool_call(original, ToolCall(name="get_cart"))
+
+    assert execution.session is original
+    assert execution.result.to_dict() == {
+        "ok": False,
+        "data": {},
+        "errors": [
+            {
+                "code": "tool_execution_failure",
+                "message": "The requested action could not be completed.",
+            }
+        ],
+    }

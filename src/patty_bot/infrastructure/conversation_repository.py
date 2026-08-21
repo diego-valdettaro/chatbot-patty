@@ -4,7 +4,7 @@ import json
 import sqlite3
 from collections.abc import Mapping
 from datetime import date, datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -17,6 +17,7 @@ from patty_bot.application.conversation_state import (
     HandoffReason,
 )
 from patty_bot.domain.orders import Order, OrderDetails, OrderItem
+from patty_bot.application.errors import ConversationStateCorruptionError
 
 
 class ConversationRepository(Protocol):
@@ -48,15 +49,23 @@ class SQLiteConversationRepository:
             ).fetchone()
         if row is None:
             return None
-        return ConversationState(
-            conversation_id=conversation_id,
-            status=ConversationStatus(row[0]),
-            cart=_cart_from_data(_json_object(row[1])),
-            order_details=_order_details_from_data(_json_object(row[2])),
-            confirmed_order=_order_from_data(_json_object(row[3])) if row[3] is not None else None,
-            messages=tuple(_message_from_data(item) for item in _json_list(row[4])),
-            handoff_reason=HandoffReason(row[5]) if row[5] is not None else None,
-        )
+        try:
+            state = ConversationState(
+                conversation_id=conversation_id,
+                status=ConversationStatus(row[0]),
+                cart=_cart_from_data(_json_object(row[1])),
+                order_details=_order_details_from_data(_json_object(row[2])),
+                confirmed_order=_order_from_data(_json_object(row[3])) if row[3] is not None else None,
+                messages=tuple(_message_from_data(item) for item in _json_list(row[4])),
+                handoff_reason=HandoffReason(row[5]) if row[5] is not None else None,
+            )
+            _validate_loaded_state(state)
+            return state
+        except (InvalidOperation, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+            # Do not overwrite a malformed row with an empty state.  Callers can
+            # present a safe reply while the original row remains available for
+            # diagnosis and recovery.
+            raise ConversationStateCorruptionError("Persisted conversation state is invalid.") from error
 
     def save(self, conversation_state: ConversationState) -> None:
         self._initialize_schema()
@@ -156,13 +165,12 @@ def _cart_to_data(cart: Cart) -> dict[str, object]:
 
 def _cart_from_data(data: Mapping[str, Any]) -> Cart:
     raw_items = data.get("items", [])
-    if not isinstance(raw_items, list):
+    if not isinstance(raw_items, list) or not all(isinstance(item, dict) for item in raw_items):
         raise ValueError("Conversation cart items must be a list.")
     return Cart(
         items=tuple(
             CartItem(product=_product_from_data(item["product"]), quantity=item["quantity"])
             for item in raw_items
-            if isinstance(item, dict)
         )
     )
 
@@ -244,7 +252,7 @@ def _order_to_data(order: Order) -> dict[str, object]:
 
 def _order_from_data(data: Mapping[str, Any]) -> Order:
     raw_items = data.get("items", [])
-    if not isinstance(raw_items, list):
+    if not isinstance(raw_items, list) or not all(isinstance(item, dict) for item in raw_items):
         raise ValueError("Confirmed order items must be a list.")
     return Order(
         details=_order_details_from_data(data["details"]),
@@ -257,7 +265,6 @@ def _order_from_data(data: Mapping[str, Any]) -> Order:
                 line_subtotal=Decimal(item["line_subtotal"]),
             )
             for item in raw_items
-            if isinstance(item, dict)
         ),
         subtotal=Decimal(data["subtotal"]),
         delivery_fee=Decimal(data["delivery_fee"]),
@@ -273,4 +280,17 @@ def _message_to_data(message: ConversationMessage) -> dict[str, str]:
 
 
 def _message_from_data(data: Mapping[str, Any]) -> ConversationMessage:
-    return ConversationMessage(role=data["role"], content=data["content"])
+    role = data["role"]
+    content = data["content"]
+    if role not in {"user", "assistant"} or not isinstance(content, str):
+        raise ValueError("Conversation messages must have a supported role and text content.")
+    return ConversationMessage(role=role, content=content)
+
+
+def _validate_loaded_state(state: ConversationState) -> None:
+    """Reject impossible lifecycle data instead of letting later saves discard it."""
+
+    if state.status is ConversationStatus.HUMAN_HANDOFF and state.handoff_reason is None:
+        raise ValueError("Human handoff state is missing its reason.")
+    if state.status is not ConversationStatus.HUMAN_HANDOFF and state.handoff_reason is not None:
+        raise ValueError("Only human handoff state may include a reason.")
