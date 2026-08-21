@@ -17,6 +17,7 @@ from patty_bot.application.conversation_state import (
 from patty_bot.infrastructure.conversation_repository import ConversationRepository, SQLiteConversationRepository
 from patty_bot.infrastructure.config import LLMConfigurationError, LLMSettings
 from patty_bot.application.conversation_service import HUMAN_HANDOFF_REPLY, SAFE_PROVIDER_REPLY, ConversationService
+from patty_bot.application.handoff_presentation import HORECA_OR_SPECIAL_ORDER_HANDOFF_MESSAGE
 
 
 SETTINGS = LLMSettings(
@@ -214,6 +215,27 @@ def test_detected_handoff_persists_the_message_without_configuring_or_calling_th
     assert state.status is ConversationStatus.HUMAN_HANDOFF
     assert state.handoff_reason is HandoffReason.CUSTOMER_REQUEST
     assert [message.content for message in state.messages] == ["Quiero hablar con una persona."]
+
+
+def test_horeca_handoff_happens_before_the_provider_and_keeps_the_order_unchanged(monkeypatch) -> None:
+    repository = InMemoryConversationRepository()
+    conversation_service = service(repository)
+    original = conversation_service.load_conversation("conversation-1")
+    monkeypatch.setattr(
+        "patty_bot.application.conversation_service.load_llm_settings",
+        lambda: pytest.fail("HORECA requests must not reach provider configuration."),
+    )
+
+    turn = conversation_service.handle_message("conversation-1", "Necesito una torta personalizada para una boda.")
+
+    state = repository.states["conversation-1"]
+    assert turn.reply == HORECA_OR_SPECIAL_ORDER_HANDOFF_MESSAGE
+    assert state.status is ConversationStatus.HUMAN_HANDOFF
+    assert state.handoff_reason is HandoffReason.HORECA_OR_SPECIAL_ORDER
+    assert state.cart == original.cart
+    assert state.order_details == original.order_details
+    assert state.confirmed_order is original.confirmed_order
+    assert [message.content for message in state.messages] == ["Necesito una torta personalizada para una boda."]
 
 
 def test_detected_handoff_after_confirmation_blocks_the_provider(monkeypatch) -> None:

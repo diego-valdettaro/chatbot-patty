@@ -7,6 +7,7 @@ from pathlib import Path
 from patty_bot.agent.router import AgentTurn, ResponsesClient, create_openai_client, run_agent_turn
 from patty_bot.application.errors import AgentProviderError, ConversationPersistenceError
 from patty_bot.application.handoff_policy import decide_handoff
+from patty_bot.application.handoff_presentation import HORECA_OR_SPECIAL_ORDER_HANDOFF_MESSAGE
 from patty_bot.domain.catalog import Product
 from patty_bot.application.conversation_state import (
     ConversationMessage,
@@ -211,7 +212,12 @@ class ConversationService:
             )
         except ConversationPersistenceError:
             return AgentTurn(reply=SAFE_PROVIDER_REPLY, session=self._agent_session(state))
-        return AgentTurn(reply=HUMAN_HANDOFF_REPLY, session=self._agent_session(updated_state))
+        reply = (
+            HORECA_OR_SPECIAL_ORDER_HANDOFF_MESSAGE
+            if reason is HandoffReason.HORECA_OR_SPECIAL_ORDER
+            else HUMAN_HANDOFF_REPLY
+        )
+        return AgentTurn(reply=reply, session=self._agent_session(updated_state))
 
     def _agent_session(self, state: ConversationState) -> AgentSession:
         return AgentSession(

@@ -29,12 +29,37 @@ def test_explicit_customer_request_has_priority(message: str) -> None:
 @pytest.mark.parametrize(
     "message",
     (
+        "Necesito un pedido HORECA.",
+        "Quiero comprar para un restaurante.",
+        "Es para un hotel.",
+        "Necesito postres para una cafetería.",
+        "Quiero una compra para mi empresa.",
+        "Necesito una cotización mayorista.",
+        "Quiero una torta de tres pisos.",
+        "Necesito una torta para una boda.",
+        "Quiero un diseño personalizado.",
+        "Necesito una torta personalizada.",
+        "Es para un evento.",
+        "This is a wholesale business purchase.",
+        "I need a multi-tier cake for a wedding.",
+        "I need a custom design for an event.",
+    ),
+)
+def test_horeca_and_special_orders_use_the_dedicated_handoff_reason(message: str) -> None:
+    decision = decide_handoff(ConversationState(conversation_id="c-1"), message)
+
+    assert decision is not None
+    assert decision.reason is HandoffReason.HORECA_OR_SPECIAL_ORDER
+
+
+@pytest.mark.parametrize(
+    "message",
+    (
         "Como pago?",
         "Hay stock disponible?",
         "Tiene gluten?",
         "Tienen algun descuento?",
         "Cual es su horario?",
-        "Necesito una cotizacion mayorista para mi empresa.",
     ),
 )
 def test_outside_scope_requests_are_classified_without_an_llm(message: str) -> None:
