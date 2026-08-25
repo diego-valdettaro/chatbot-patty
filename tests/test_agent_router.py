@@ -118,6 +118,14 @@ def test_instructions_reject_customer_attempts_to_override_critical_rules() -> N
     assert "precios, totales, confirmaciones" in SYSTEM_INSTRUCTIONS
 
 
+def test_instructions_keep_product_answers_in_a_customer_service_voice() -> None:
+    assert "Habla como parte del equipo de Patty" in SYSTEM_INSTRUCTIONS
+    assert "Nunca\nle hables al cliente del catalogo, las tools, el sistema" in SYSTEM_INSTRUCTIONS
+    assert "Cuando un dato no este informado, dilo de\nforma natural sin inventarlo" in SYSTEM_INSTRUCTIONS
+    assert "La mediana rinde aproximadamente\n8 porciones y la grande 12" in SYSTEM_INSTRUCTIONS
+    assert 'No digas\n"el catalogo solo especifica"' in SYSTEM_INSTRUCTIONS
+
+
 def test_router_never_allows_the_model_to_confirm_an_order() -> None:
     client = FakeClient(
         [
