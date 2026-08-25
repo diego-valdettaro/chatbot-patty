@@ -58,9 +58,35 @@ def test_update_order_details_rejects_bad_date_without_changing_state() -> None:
     assert execution.details is details
     assert execution.result.to_dict()["errors"][0] == {
         "code": "invalid_argument",
-        "message": "requested_date must use YYYY-MM-DD format.",
+        "message": "requested_date must be an ISO date or a supported Spanish date expression.",
         "field": "requested_date",
     }
+
+
+def test_update_order_details_resolves_natural_date_and_reports_the_inference() -> None:
+    execution = update_order_details(
+        OrderDetails(),
+        {"requested_date": "pasado mañana"},
+        reference_date=REFERENCE_DATE,
+    )
+
+    assert execution.details.requested_date == date(2026, 7, 27)
+    assert execution.result.to_dict()["data"]["requested_date_interpretation"] == {
+        "interpreted_date": "2026-07-27",
+        "inferred": True,
+        "kind": "pasado_manana",
+    }
+
+
+def test_update_order_details_keeps_minimum_advance_validation_after_interpreting_date() -> None:
+    execution = update_order_details(
+        OrderDetails(),
+        {"requested_date": "mañana"},
+        reference_date=REFERENCE_DATE,
+    )
+
+    assert execution.details.requested_date == date(2026, 7, 26)
+    assert execution.result.to_dict()["data"]["validation"]["invalid_fields"] == ["requested_date"]
 
 
 def test_validate_and_summarize_order_use_current_domain_rules() -> None:

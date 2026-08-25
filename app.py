@@ -1,4 +1,3 @@
-from datetime import date
 from dataclasses import replace
 from uuid import uuid4
 
@@ -22,6 +21,7 @@ from patty_bot.domain.orders import (
     total_for_order,
     validate_order_details,
 )
+from patty_bot.domain.natural_dates import lima_today
 from patty_bot.infrastructure.repository import save_confirmed_order
 def initialize_session_state(catalog) -> None:
     """Initialize UI state while ConversationService owns agent execution details."""
@@ -170,7 +170,7 @@ def render_order_details(disabled: bool = False) -> OrderDetails:
         "Fecha solicitada",
         # An empty date means the customer has not selected one; the minimum remains a validation rule.
         value=current_details.requested_date,
-        min_value=date.today(),
+        min_value=lima_today(),
         disabled=disabled,
     )
 

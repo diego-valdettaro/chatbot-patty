@@ -82,6 +82,26 @@ def test_executor_interprets_strict_nulls_as_unchanged_optional_order_fields() -
     assert execution.result.ok is True
 
 
+def test_executor_resolves_a_natural_requested_date_against_the_session_business_date() -> None:
+    execution = execute_tool_call(
+        session(),
+        ToolCall(
+            name="update_order_details",
+            arguments={
+                "customer_name": None,
+                "customer_phone": None,
+                "fulfillment_type": None,
+                "requested_date": "pasado mañana",
+                "delivery_address": None,
+                "pickup_store": None,
+            },
+        ),
+    )
+
+    assert execution.session.order_details.requested_date == date(2026, 7, 27)
+    assert execution.result.to_dict()["data"]["requested_date_interpretation"]["inferred"] is True
+
+
 def test_executor_blocks_confirmation_without_explicit_customer_action() -> None:
     original = session()
 

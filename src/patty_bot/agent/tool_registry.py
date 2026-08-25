@@ -101,7 +101,11 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
     ),
     ToolDefinition(
         name="update_order_details",
-        description="Update customer, fulfillment, and requested-date details for the current draft order.",
+        description=(
+            "Update customer, fulfillment, and requested-date details for the current draft order. "
+            "requested_date accepts YYYY-MM-DD or Spanish natural dates such as manana, pasado manana, "
+            "proximo lunes, or 15 de febrero; the server resolves them using Lima, Peru time."
+        ),
         input_schema={
             "type": "object",
             "properties": {
@@ -109,7 +113,7 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
                 "customer_phone": {"type": "string"},
                 "fulfillment_type": {"type": "string", "enum": ["delivery", "pickup"]},
                 "requested_date": {
-                    "anyOf": [{"type": "string", "format": "date"}, {"type": "null"}]
+                    "anyOf": [{"type": "string"}, {"type": "null"}]
                 },
                 "delivery_address": {"type": "string"},
                 "pickup_store": {"type": "string"},
