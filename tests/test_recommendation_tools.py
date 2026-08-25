@@ -67,6 +67,16 @@ def test_recommend_products_returns_a_successful_empty_result() -> None:
     assert result.to_dict() == {"ok": True, "data": {"recommendations": []}, "errors": []}
 
 
+def test_recommend_products_lists_only_real_active_categories_for_broad_exploration() -> None:
+    result = recommend_products(products(), {})
+
+    assert result.to_dict() == {
+        "ok": True,
+        "data": {"categories": ["Tortas"], "recommendations": []},
+        "errors": [],
+    }
+
+
 @pytest.mark.parametrize(
     ("arguments", "field"),
     (

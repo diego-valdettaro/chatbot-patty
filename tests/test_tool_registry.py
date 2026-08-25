@@ -41,6 +41,8 @@ def test_recommendation_tool_schema_exposes_structured_optional_criteria() -> No
         "excluded_allergens": {"type": "array", "items": {"type": "string", "minLength": 1}},
         "max_price": {"type": "string", "minLength": 1},
     }
+    assert "broad exploratory inquiry" in definition.description
+    assert "real catalog categories" in definition.description
 
 
 def test_every_public_tool_has_a_private_handler() -> None:

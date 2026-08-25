@@ -47,8 +47,10 @@ TOOL_REGISTRY: tuple[ToolDefinition, ...] = (
     ToolDefinition(
         name="recommend_products",
         description=(
-            "Recommend compatible catalog products when the customer describes needs or asks for help choosing; "
-            "use search_catalog when they know a product name, alias, or category."
+            "Recommend compatible catalog products using customer criteria. When a customer makes a broad "
+            "exploratory inquiry without criteria, call with all criteria null (and excluded_allergens empty) "
+            "to obtain the real catalog categories; do not present its empty recommendations as products. "
+            "Use search_catalog when they know a product name, alias, or category."
         ),
         input_schema={
             "type": "object",
