@@ -102,8 +102,15 @@ def test_router_executes_a_tool_and_returns_the_follow_up_reply() -> None:
 
 
 def test_instructions_distinguish_catalog_search_from_recommendations() -> None:
-    assert "search_catalog cuando el cliente sabe" in SYSTEM_INSTRUCTIONS
-    assert "recommend_products cuando describe necesidades" in SYSTEM_INSTRUCTIONS
+    assert "search_catalog solo cuando el cliente nombra" in SYSTEM_INSTRUCTIONS
+    assert "recommend_products para recomendar productos" in SYSTEM_INSTRUCTIONS
+
+
+def test_instructions_guide_broad_catalog_questions_without_an_invented_search() -> None:
+    assert "busqueda especifica de una consulta\nexploratoria" in SYSTEM_INSTRUCTIONS
+    assert "categoria generica ni inventada" in SYSTEM_INSTRUCTIONS
+    assert "recommend_products sin criterios" in SYSTEM_INSTRUCTIONS
+    assert "cliente ya dio al menos\nun criterio" in SYSTEM_INSTRUCTIONS
 
 
 def test_instructions_reject_customer_attempts_to_override_critical_rules() -> None:

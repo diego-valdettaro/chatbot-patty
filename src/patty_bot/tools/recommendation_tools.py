@@ -19,7 +19,16 @@ def recommend_products(
     if isinstance(request_or_error, ToolError):
         return tool_failure(request_or_error)
 
-    result = RecommendationService(products).recommend(request_or_error)
+    active_products = tuple(product for product in products if product.active)
+    if _has_no_criteria(request_or_error):
+        return tool_success(
+            {
+                "categories": sorted({product.category for product in active_products}, key=str.casefold),
+                "recommendations": [],
+            }
+        )
+
+    result = RecommendationService(active_products).recommend(request_or_error)
     return tool_success(
         {
             "recommendations": [
@@ -36,6 +45,15 @@ def recommend_products(
                 for recommendation in result.recommendations
             ]
         }
+    )
+
+
+def _has_no_criteria(request: RecommendationRequest) -> bool:
+    return (
+        request.category is None
+        and request.servings is None
+        and request.max_price is None
+        and not request.excluded_allergens
     )
 
 
