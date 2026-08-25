@@ -6,6 +6,7 @@ from typing import Mapping
 
 from patty_bot.domain.cart import Cart
 from patty_bot.domain.orders import ORDER_STATUS_PENDING, Order, OrderDetails, OrderValidationResult, delivery_fee_for_order, total_for_order, validate_order_details
+from patty_bot.domain.natural_dates import NaturalDateError, NaturalDateInterpretation, interpret_requested_date
 from patty_bot.infrastructure.repository import save_confirmed_order
 from patty_bot.agent.tool_contracts import JsonValue, ToolError, ToolResult, tool_failure, tool_success
 
@@ -59,19 +60,21 @@ def update_order_details(
             "fulfillment_type",
         )
 
-    # Dates cross the tool boundary as ISO strings; null explicitly clears a previous date.
+    # Customers may use a natural Spanish date; its resolution stays deterministic in the domain.
     requested_date = details.requested_date
+    date_interpretation: NaturalDateInterpretation | None = None
     if "requested_date" in arguments:
         requested_date_value = arguments["requested_date"]
         if requested_date_value is None:
             requested_date = None
         elif isinstance(requested_date_value, str):
             try:
-                requested_date = date.fromisoformat(requested_date_value)
-            except ValueError:
+                date_interpretation = interpret_requested_date(requested_date_value, reference_date=reference_date)
+                requested_date = date_interpretation.value
+            except NaturalDateError as error:
                 return _failed_details_execution(
                     details,
-                    "requested_date must use YYYY-MM-DD format.",
+                    str(error),
                     "requested_date",
                 )
         else:
@@ -90,7 +93,7 @@ def update_order_details(
     # Return server-side state plus a serializable validation snapshot for the next agent decision.
     return OrderDetailsToolExecution(
         details=updated_details,
-        result=tool_success(_details_payload(updated_details, reference_date)),
+        result=tool_success(_details_payload(updated_details, reference_date, date_interpretation)),
     )
 
 
@@ -146,9 +149,13 @@ def confirm_order(
     )
 
 
-def _details_payload(details: OrderDetails, reference_date: date | None) -> dict[str, JsonValue]:
+def _details_payload(
+    details: OrderDetails,
+    reference_date: date | None,
+    date_interpretation: NaturalDateInterpretation | None = None,
+) -> dict[str, JsonValue]:
     validation = validate_order_details(details, reference_date=reference_date)
-    return {
+    payload: dict[str, JsonValue] = {
         "order_details": {
             "customer_name": details.customer_name,
             "customer_phone": details.customer_phone,
@@ -159,6 +166,13 @@ def _details_payload(details: OrderDetails, reference_date: date | None) -> dict
         },
         "validation": _serialize_validation(validation),
     }
+    if date_interpretation is not None:
+        payload["requested_date_interpretation"] = {
+            "interpreted_date": date_interpretation.value.isoformat(),
+            "inferred": date_interpretation.inferred,
+            "kind": date_interpretation.interpretation,
+        }
+    return payload
 
 
 def _serialize_validation(validation: OrderValidationResult) -> dict[str, JsonValue]:

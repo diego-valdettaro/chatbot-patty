@@ -5,6 +5,7 @@ from typing import Literal
 
 from patty_bot.domain.cart import Cart
 from patty_bot.infrastructure.config import DELIVERY_FEE, PICKUP_STORES
+from patty_bot.domain.natural_dates import lima_today
 
 
 FulfillmentType = Literal["delivery", "pickup"]
@@ -90,7 +91,7 @@ def validate_order_details(
     reference_date: date | None = None,
 ) -> OrderValidationResult:
     # reference_date makes date-dependent rules deterministic in tests and tool calls.
-    today = reference_date or date.today()
+    today = reference_date or lima_today()
     missing_fields: list[str] = []
     invalid_fields: list[str] = []
 
@@ -123,7 +124,7 @@ def validate_order_details(
 
 
 def minimum_requested_date(reference_date: date | None = None) -> date:
-    today = reference_date or date.today()
+    today = reference_date or lima_today()
     return today + timedelta(days=MINIMUM_ADVANCE_DAYS)
 
 

@@ -47,7 +47,7 @@ def test_adapter_makes_optional_arguments_nullable_and_required_for_strict_mode(
         "anyOf": [{"type": "string"}, {"type": "null"}]
     }
     assert parameters["properties"]["requested_date"] == {
-        "anyOf": [{"type": "string", "format": "date"}, {"type": "null"}]
+        "anyOf": [{"type": "string"}, {"type": "null"}]
     }
 
 
