@@ -57,7 +57,6 @@ def test_horeca_and_special_orders_use_the_dedicated_handoff_reason(message: str
     (
         "Como pago?",
         "Hay stock disponible?",
-        "Tiene gluten?",
         "Tienen algun descuento?",
         "Cual es su horario?",
     ),
@@ -94,6 +93,35 @@ def test_post_confirmation_message_is_sent_to_a_person() -> None:
 
 def test_regular_order_message_does_not_trigger_a_handoff() -> None:
     assert decide_handoff(ConversationState(conversation_id="c-1"), "Quiero dos brownies.") is None
+
+
+@pytest.mark.parametrize(
+    "message",
+    (
+        "Ninguna alergia.",
+        "Sin nueces, por favor.",
+        "No puedo comer gluten.",
+        "Tiene lactosa?",
+    ),
+)
+def test_simple_allergen_preferences_and_catalog_questions_continue_automatically(message: str) -> None:
+    assert decide_handoff(ConversationState(conversation_id="c-1"), message) is None
+
+
+@pytest.mark.parametrize(
+    "message",
+    (
+        "Hay riesgo de contaminacion cruzada?",
+        "Es seguro para una alergia severa?",
+        "Me garantizan que no tiene trazas de gluten?",
+        "Es apto para celiacos?",
+    ),
+)
+def test_allergen_safety_requests_are_sent_to_a_person(message: str) -> None:
+    decision = decide_handoff(ConversationState(conversation_id="c-1"), message)
+
+    assert decision is not None
+    assert decision.reason is HandoffReason.OUTSIDE_SUPPORTED_SCOPE
 
 
 @pytest.mark.parametrize(

@@ -40,14 +40,21 @@ _OUTSIDE_SCOPE_PATTERNS = (
     r"\b(pago|pagar|tarjeta|transferencia|yape|plin)\b",
     # Real-time availability.
     r"\b(stock|disponible|disponibilidad|existencias|agotado)\b",
-    # Allergens and dietary safety.
-    r"\b(alerg\w*|gluten|lactosa)\b",
     # Commercial terms deliberately deferred from this MVP.
     r"\b(promo\w*|descuento|cupon\w*|oferta\w*)\b",
     # Opening and delivery/pickup hours.
     r"\b(horario\w*|abren|cierran|hora de (entrega|recojo))\b",
     # Business-to-business requests.
     r"\b(mayorista\w*|empresa\w*|corporativ\w*|b2b|factura|ruc)\b",
+)
+
+# Catalog allergen fields can support a simple preference or exclusion such as
+# "sin gluten". They cannot establish food-safety guarantees, especially for
+# severe allergies or cross-contamination. Keep those requests with a person.
+_ALLERGEN_SAFETY_PATTERNS = (
+    r"\b(contaminacion cruzada|trazas?)\b",
+    r"\b(alerg\w*|celiac\w*)\b.*\b(sever\w*|anafilax\w*|segur\w*|garantiz\w*|certific\w*)\b",
+    r"\b(segur\w*|garantiz\w*|certific\w*|apto)\b.*\b(alerg\w*|celiac\w*)\b",
 )
 
 # Customer messages are untrusted input.  These patterns deliberately require
@@ -93,6 +100,8 @@ def decide_handoff(state: ConversationState, user_message: str) -> HandoffDecisi
     if state.status is ConversationStatus.CONFIRMED:
         return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
     if _matches_any(normalized, _INSTRUCTION_OVERRIDE_PATTERNS):
+        return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
+    if _matches_any(normalized, _ALLERGEN_SAFETY_PATTERNS):
         return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
     if _matches_any(normalized, _OUTSIDE_SCOPE_PATTERNS):
         return HandoffDecision(HandoffReason.OUTSIDE_SUPPORTED_SCOPE)
