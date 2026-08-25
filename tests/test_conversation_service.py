@@ -217,6 +217,28 @@ def test_detected_handoff_persists_the_message_without_configuring_or_calling_th
     assert [message.content for message in state.messages] == ["Quiero hablar con una persona."]
 
 
+@pytest.mark.parametrize("message", ("Ninguna alergia.", "Sin gluten, por favor."))
+def test_simple_allergen_responses_reach_the_agent_without_a_handoff(monkeypatch, message: str) -> None:
+    repository = InMemoryConversationRepository()
+    conversation_service = service(repository)
+    client = object()
+    monkeypatch.setattr("patty_bot.application.conversation_service.load_llm_settings", lambda: SETTINGS)
+    monkeypatch.setattr("patty_bot.application.conversation_service.create_openai_client", lambda settings: client)
+    calls = []
+
+    def run_turn(received_client, settings, session, received_message, conversation):
+        calls.append((received_client, received_message))
+        return AgentTurn(reply="Entendido.", session=session)
+
+    monkeypatch.setattr("patty_bot.application.conversation_service.run_agent_turn", run_turn)
+
+    turn = conversation_service.handle_message("conversation-1", message)
+
+    assert turn.reply == "Entendido."
+    assert calls == [(client, message)]
+    assert repository.states["conversation-1"].status is ConversationStatus.ACTIVE
+
+
 def test_horeca_handoff_happens_before_the_provider_and_keeps_the_order_unchanged(monkeypatch) -> None:
     repository = InMemoryConversationRepository()
     conversation_service = service(repository)
