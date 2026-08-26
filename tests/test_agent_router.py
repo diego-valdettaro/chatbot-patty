@@ -126,6 +126,17 @@ def test_instructions_keep_product_answers_in_a_customer_service_voice() -> None
     assert 'No digas\n"el catalogo solo especifica"' in SYSTEM_INSTRUCTIONS
 
 
+def test_instructions_invite_customers_to_continue_after_adding_to_cart() -> None:
+    assert "Despues de un add_to_cart exitoso" in SYSTEM_INSTRUCTIONS
+    assert "producto, cantidad y subtotal que devolvio\nla tool" in SYSTEM_INSTRUCTIONS
+    assert "pregunta breve para seguir armando el pedido" in SYSTEM_INSTRUCTIONS
+
+
+def test_instructions_skip_the_sales_invitation_when_the_customer_is_finishing() -> None:
+    assert "cliente ya dijo que termino, pidio el resumen o inicio la finalizacion" in SYSTEM_INSTRUCTIONS
+    assert "atiende esa solicitud sin retrasarla" in SYSTEM_INSTRUCTIONS
+
+
 def test_router_never_allows_the_model_to_confirm_an_order() -> None:
     client = FakeClient(
         [
