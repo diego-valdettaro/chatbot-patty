@@ -104,7 +104,14 @@ def test_sqlite_repository_migrates_an_existing_conversations_table_additively(t
 
     with sqlite3.connect(database_path) as connection:
         columns = {row[1] for row in connection.execute("PRAGMA table_info(conversations)")}
-    assert {"status", "handoff_reason", "handoff_created_at"}.issubset(columns)
+    assert {
+        "status",
+        "handoff_reason",
+        "handoff_created_at",
+        "pending_messages_json",
+        "pending_until",
+        "processing_batch_json",
+    }.issubset(columns)
 
 
 @pytest.mark.parametrize(

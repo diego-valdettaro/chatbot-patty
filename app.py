@@ -232,14 +232,28 @@ def _pickup_store_index(pickup_store: str) -> int:
     return 0
 
 
-def respond_to_chat_message(user_message: str) -> str:
-    """Delegate one chat message; ConversationService persists the resulting state."""
+def queue_chat_message(user_message: str) -> None:
+    """Save a chat message immediately and let the debounce processor answer it."""
 
-    turn = st.session_state.conversation_service.handle_message(st.session_state.conversation_id, user_message)
+    st.session_state.conversation_service.queue_message(st.session_state.conversation_id, user_message)
     st.session_state.conversation_state = st.session_state.conversation_service.load_conversation(
         st.session_state.conversation_id
     )
-    return turn.reply
+
+
+def render_pending_chat_processor() -> None:
+    """Poll short-lived pending input without keeping the Streamlit request open."""
+
+    @st.fragment(run_every=1)
+    def process_pending() -> None:
+        turn = st.session_state.conversation_service.process_due_messages(st.session_state.conversation_id)
+        if turn is not None:
+            st.session_state.conversation_state = st.session_state.conversation_service.load_conversation(
+                st.session_state.conversation_id
+            )
+            st.rerun()
+
+    process_pending()
 
 
 def render_chat() -> None:
@@ -254,6 +268,10 @@ def render_chat() -> None:
     if handoff_message is not None:
         st.warning(f"Tu conversación está siendo atendida por una persona. {handoff_message}")
 
+    if not handoff_active:
+        render_pending_chat_processor()
+        state = st.session_state.conversation_state
+
     conversation = st.container(height=520, border=True)
     with conversation:
         if not state.messages:
@@ -262,10 +280,18 @@ def render_chat() -> None:
         for message in state.messages:
             with st.chat_message(message.role):
                 st.write(message.content)
+        pending_messages = state.pending_messages
+        if state.processing_batch is not None:
+            pending_messages = state.processing_batch.messages + pending_messages
+        for message in pending_messages:
+            with st.chat_message("user"):
+                st.write(message.content)
+        if pending_messages:
+            st.caption("Patty esta revisando tus mensajes...")
 
     user_message = st.chat_input("Escribe un mensaje para Patty", disabled=handoff_active)
     if user_message and not handoff_active:
-        respond_to_chat_message(user_message)
+        queue_chat_message(user_message)
         st.rerun()
 
 

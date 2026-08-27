@@ -1,6 +1,7 @@
 """State objects required to continue a customer conversation across channels."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 
 from patty_bot.domain.cart import Cart
@@ -69,6 +70,23 @@ class ConversationMessage:
 
 
 @dataclass(frozen=True)
+class PendingMessage:
+    """A customer message waiting for the debounce window to expire."""
+
+    id: str
+    content: str
+    received_at: datetime
+
+
+@dataclass(frozen=True)
+class PendingMessageBatch:
+    """An exclusively claimed batch, retained until its turn is persisted."""
+
+    id: str
+    messages: tuple[PendingMessage, ...]
+
+
+@dataclass(frozen=True)
 class ConversationState:
     """Persisted state for one active customer conversation without application logic."""
 
@@ -79,6 +97,9 @@ class ConversationState:
     confirmed_order: Order | None = None
     messages: tuple[ConversationMessage, ...] = ()
     handoff_reason: HandoffReason | None = None
+    pending_messages: tuple[PendingMessage, ...] = ()
+    pending_until: datetime | None = None
+    processing_batch: PendingMessageBatch | None = None
 
 
 def transition_status(current: ConversationStatus, target: ConversationStatus) -> ConversationStatus:
