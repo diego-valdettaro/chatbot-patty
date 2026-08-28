@@ -1,8 +1,11 @@
 """Application service for one customer conversation with Patty."""
 
 from collections.abc import Iterable
+from datetime import UTC, datetime, timedelta
 import logging
 from pathlib import Path
+import re
+from uuid import uuid4
 
 from patty_bot.agent.router import AgentTurn, ResponsesClient, create_openai_client, run_agent_turn
 from patty_bot.application.errors import AgentProviderError, ConversationPersistenceError
@@ -14,6 +17,7 @@ from patty_bot.application.conversation_state import (
     ConversationState,
     ConversationStatus,
     HandoffReason,
+    PendingMessage,
     allows_automatic_response,
     allows_order_modification,
     transition_status,
@@ -28,6 +32,8 @@ from patty_bot.agent.tool_executor import AgentSession
 LOGGER = logging.getLogger(__name__)
 SAFE_PROVIDER_REPLY = "No pude responder en este momento. Intenta nuevamente en unos instantes."
 HUMAN_HANDOFF_REPLY = "Voy a derivar tu conversacion a una persona del equipo para que pueda ayudarte."
+MESSAGE_DEBOUNCE_WINDOW = timedelta(seconds=3)
+_IMMEDIATE_MESSAGE_PATTERN = re.compile(r"\b(confirmo|confirmar|cancelar|anular)\b", re.IGNORECASE)
 
 
 class ConversationService:
@@ -86,6 +92,9 @@ class ConversationService:
             confirmed_order=state.confirmed_order,
             messages=state.messages,
             handoff_reason=state.handoff_reason,
+            pending_messages=state.pending_messages,
+            pending_until=state.pending_until,
+            processing_batch=state.processing_batch,
         )
         self._save_state(updated_state, stage="transition_conversation")
         LOGGER.info(
@@ -121,6 +130,9 @@ class ConversationService:
             messages=state.messages
             + ((ConversationMessage(role="user", content=user_message),) if user_message is not None else ()),
             handoff_reason=reason,
+            pending_messages=state.pending_messages,
+            pending_until=state.pending_until,
+            processing_batch=state.processing_batch,
         )
         self._save_state(updated_state, stage="initiate_human_handoff")
         LOGGER.info(
@@ -196,6 +208,74 @@ class ConversationService:
         except AgentProviderError:
             return self._initiate_detected_handoff(state, user_message, HandoffReason.PROCESSING_ERROR)
 
+    def queue_message(self, conversation_id: str, user_message: str, *, now: datetime | None = None) -> bool:
+        """Persist a customer message and return whether it was handled immediately.
+
+        Channels call this method when they can accept several messages before a
+        reply. The message itself is persisted immediately; only the provider
+        call waits for the short sliding window.
+        """
+
+        now = now or datetime.now(UTC)
+        try:
+            state = self.load_conversation(conversation_id)
+            if not allows_automatic_response(state.status):
+                self._save_handoff_message(state, user_message)
+                return True
+            handoff = decide_handoff(state, user_message)
+            if handoff is not None:
+                self._handoff_buffered_messages(state, user_message, handoff.reason)
+                return True
+            pending = PendingMessage(id=str(uuid4()), content=user_message, received_at=now)
+            self._repository.enqueue_pending_message(conversation_id, pending, now + MESSAGE_DEBOUNCE_WINDOW)
+            if _IMMEDIATE_MESSAGE_PATTERN.search(user_message):
+                self.process_due_messages(conversation_id, now=now, force=True)
+                return True
+            return False
+        except ConversationPersistenceError:
+            return True
+        except Exception as error:
+            self._log_persistence_error(conversation_id, "queue_message", error)
+            return True
+
+    def process_due_messages(
+        self, conversation_id: str, *, now: datetime | None = None, force: bool = False
+    ) -> AgentTurn | None:
+        """Process one exclusively claimed debounce batch when it is due."""
+
+        now = now or datetime.now(UTC)
+        try:
+            state = self._repository.claim_pending_messages(conversation_id, now, force=force)
+        except Exception as error:
+            self._log_persistence_error(conversation_id, "claim_pending_messages", error)
+            return AgentTurn(reply=SAFE_PROVIDER_REPLY, session=self._empty_session())
+        if state is None:
+            return None
+        batch = state.processing_batch
+        if batch is None:
+            return None
+        session = self._agent_session(state)
+        user_message = "\n".join(message.content for message in batch.messages)
+        conversation = tuple({"role": message.role, "content": message.content} for message in state.messages)
+        try:
+            settings = load_llm_settings()
+            if self._client is None or self._client_key != settings.api_key:
+                self._client = create_openai_client(settings)
+                self._client_key = settings.api_key
+            turn = self._run_agent_turn(conversation_id, self._client, settings, session, user_message, conversation)
+            persisted = self._repository.complete_pending_messages(conversation_id, batch.id, turn.reply, self._state_after_turn(state, turn.session))
+            return AgentTurn(reply=turn.reply, session=self._agent_session(persisted))
+        except LLMConfigurationError:
+            return self._complete_buffered_reply(state, batch.id, session, "El chat con Patty aun no esta configurado. Completa las variables del LLM para activarlo.")
+        except AgentProviderError:
+            return self._complete_buffered_handoff(state, batch.id, HandoffReason.PROCESSING_ERROR)
+        except RuntimeError as error:
+            self._log_provider_error(conversation_id, "create_client", error)
+            return self._complete_buffered_reply(state, batch.id, session, "Falta instalar la dependencia de OpenAI. Ejecuta la instalacion del proyecto nuevamente.")
+        except Exception as error:
+            self._log_persistence_error(conversation_id, "complete_pending_messages", error)
+            return AgentTurn(reply=SAFE_PROVIDER_REPLY, session=session)
+
     def _initiate_detected_handoff(
         self,
         state: ConversationState,
@@ -218,6 +298,53 @@ class ConversationService:
             else HUMAN_HANDOFF_REPLY
         )
         return AgentTurn(reply=reply, session=self._agent_session(updated_state))
+
+    def _handoff_buffered_messages(self, state: ConversationState, user_message: str, reason: HandoffReason) -> None:
+        """Keep any waiting customer messages visible when a human takes over."""
+
+        self._repository.handoff_pending_messages(state.conversation_id, user_message, reason)
+
+    def _complete_buffered_reply(
+        self, state: ConversationState, batch_id: str, session: AgentSession, reply: str
+    ) -> AgentTurn:
+        try:
+            persisted = self._repository.complete_pending_messages(
+                state.conversation_id, batch_id, reply, self._state_after_turn(state, session)
+            )
+        except Exception as error:
+            self._log_persistence_error(state.conversation_id, "complete_pending_messages", error)
+            return AgentTurn(reply=SAFE_PROVIDER_REPLY, session=session)
+        return AgentTurn(reply=reply, session=self._agent_session(persisted))
+
+    def _complete_buffered_handoff(self, state: ConversationState, batch_id: str, reason: HandoffReason) -> AgentTurn:
+        handoff_state = ConversationState(
+            conversation_id=state.conversation_id,
+            status=transition_to_human_handoff(state.status, reason),
+            cart=state.cart,
+            order_details=state.order_details,
+            confirmed_order=state.confirmed_order,
+            messages=state.messages,
+            handoff_reason=reason,
+        )
+        try:
+            persisted = self._repository.complete_pending_messages(
+                state.conversation_id, batch_id, HUMAN_HANDOFF_REPLY, handoff_state
+            )
+        except Exception as error:
+            self._log_persistence_error(state.conversation_id, "complete_pending_handoff", error)
+            return AgentTurn(reply=SAFE_PROVIDER_REPLY, session=self._agent_session(state))
+        return AgentTurn(reply=HUMAN_HANDOFF_REPLY, session=self._agent_session(persisted))
+
+    def _state_after_turn(self, state: ConversationState, session: AgentSession) -> ConversationState:
+        return ConversationState(
+            conversation_id=state.conversation_id,
+            status=self._status_after_turn(state.status, session),
+            cart=session.cart,
+            order_details=session.order_details,
+            confirmed_order=session.confirmed_order,
+            messages=state.messages,
+            handoff_reason=state.handoff_reason,
+        )
 
     def _agent_session(self, state: ConversationState) -> AgentSession:
         return AgentSession(
@@ -250,6 +377,9 @@ class ConversationService:
             confirmed_order=session.confirmed_order,
             messages=messages + (ConversationMessage(role="assistant", content=reply),),
             handoff_reason=state.handoff_reason,
+            pending_messages=state.pending_messages,
+            pending_until=state.pending_until,
+            processing_batch=state.processing_batch,
         )
         try:
             self._save_state(updated_state, stage="persist_turn")
@@ -298,6 +428,9 @@ class ConversationService:
                     confirmed_order=state.confirmed_order,
                     messages=state.messages + (ConversationMessage(role="user", content=user_message),),
                     handoff_reason=state.handoff_reason,
+                    pending_messages=state.pending_messages,
+                    pending_until=state.pending_until,
+                    processing_batch=state.processing_batch,
                 ),
                 stage="persist_handoff_message",
             )
@@ -332,6 +465,9 @@ class ConversationService:
             confirmed_order=state.confirmed_order,
             messages=state.messages,
             handoff_reason=state.handoff_reason,
+            pending_messages=state.pending_messages,
+            pending_until=state.pending_until,
+            processing_batch=state.processing_batch,
         )
 
     def _status_after_turn(self, status: ConversationStatus, session: AgentSession) -> ConversationStatus:
